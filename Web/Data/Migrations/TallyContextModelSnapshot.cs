@@ -166,7 +166,7 @@ namespace Web.Data.Migrations
 
                     b.HasIndex("PollId");
 
-                    b.ToTable("Choices");
+                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("Web.Models.Poll", b =>

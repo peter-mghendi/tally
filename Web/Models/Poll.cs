@@ -6,6 +6,6 @@ public partial class Poll
     public PollChannel Channel { get; set; }
     public string Identifier { get; set; } = null!;
     public User Creator { get; set; } = null!;
-    public IEnumerable<Option> Options { get; set; } = new List<Option>();
-    public IEnumerable<Vote> Votes { get; set; } = new List<Vote>();
+    public ICollection<Option> Options { get; set; } = new List<Option>();
+    public ICollection<Vote> Votes { get; set; } = new List<Vote>();
 }

@@ -11,7 +11,7 @@ using Web.Data;
 namespace Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
-    [Migration("20220308150001_InitialCreate")]
+    [Migration("20220308154430_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,7 +168,7 @@ namespace Web.Data.Migrations
 
                     b.HasIndex("PollId");
 
-                    b.ToTable("Choices");
+                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("Web.Models.Poll", b =>

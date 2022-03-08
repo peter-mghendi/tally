@@ -175,7 +175,7 @@ namespace Web.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Choices",
+                name: "Options",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -185,9 +185,9 @@ namespace Web.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Choices", x => x.Id);
+                    table.PrimaryKey("PK_Options", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Choices_Polls_PollId",
+                        name: "FK_Options_Polls_PollId",
                         column: x => x.PollId,
                         principalTable: "Polls",
                         principalColumn: "Id",
@@ -215,9 +215,9 @@ namespace Web.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Votes_Choices_OptionId",
+                        name: "FK_Votes_Options_OptionId",
                         column: x => x.OptionId,
-                        principalTable: "Choices",
+                        principalTable: "Options",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -266,8 +266,8 @@ namespace Web.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Choices_PollId",
-                table: "Choices",
+                name: "IX_Options_PollId",
+                table: "Options",
                 column: "PollId");
 
             migrationBuilder.CreateIndex(
@@ -321,7 +321,7 @@ namespace Web.Data.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Choices");
+                name: "Options");
 
             migrationBuilder.DropTable(
                 name: "Polls");
