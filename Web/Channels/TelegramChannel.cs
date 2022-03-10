@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Web.Data;
 using Web.Models;
-using static Web.Models.Poll.PollChannel;
+using static Web.Models.Poll;
 
 namespace Web.Channels;
 
@@ -28,7 +28,7 @@ public class TelegramChannel
         var creator = await _userManager.FindByIdAsync(creatorId);
         var poll = new Poll
         {
-            Channel = Telegram, 
+            Channel = PollChannel.Telegram, 
             Identifier = string.Empty, 
             Creator = creator!,
             Options = options.Select(o => new Option { Text = o }).ToList()
