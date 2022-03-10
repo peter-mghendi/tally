@@ -1,50 +1,33 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.Identity;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 using Web.Data;
 using Web.Models;
-using static Web.Models.Poll;
+using Poll = Web.Models.Poll;
 
 namespace Web.Channels;
 
 public class TelegramChannel
 {
-    private const string TelegramBotTokenKey = nameof(TelegramBotTokenKey);
-    private const string TelegramChatIdKey = nameof(TelegramChatIdKey);
-
     private readonly TallyContext _context;
-    private readonly UserManager<User> _userManager;
+    private readonly ITelegramBotClient _botClient;
 
-    public TelegramChannel(IConfiguration configuration, TallyContext context, UserManager<User> userManager)
+    public TelegramChannel(ITelegramBotClient botClient, TallyContext context)
     {
-        Console.WriteLine(JsonSerializer.Serialize(configuration, new JsonSerializerOptions {WriteIndented = true}));
+        _botClient = botClient;
         _context = context;
-        _userManager = userManager;
     }
 
-    public async Task CreatePollAsync(string question, string[] options, string creatorId,
+    public async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Do the Telegram stuff   
-        var creator = await _userManager.FindByIdAsync(creatorId);
-        var poll = new Poll
+        Message pollMessage = await _botClient.SendPollAsync(332474019, question, options, cancellationToken: cancellationToken);
+
+        var telegramPoll = new ChannelPoll
         {
-            Channel = PollChannel.Telegram, 
-            Identifier = string.Empty, 
-            Creator = creator!,
-            Options = options.Select(o => new Option { Text = o }).ToList()
+            Channel = ChannelPoll.PollChannel.Telegram,
+            Identifier = pollMessage.MessageId.ToString()
         };
 
-        await _context.Polls.AddAsync(poll, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task RecordVoteAsync(int pollId, int choiceId, string voterId, CancellationToken cancellationToken = default)
-    {
-        // TODO: Do the Telegram stuff 
-        var voter = await _userManager.FindByIdAsync(voterId);
-        var poll = await _context.Polls.FindAsync(pollId, cancellationToken);
-        var option = await _context.Options.FindAsync(choiceId, cancellationToken);
-        poll!.Votes.Add(new() { Option = option!, User = voter });
-        await _context.SaveChangesAsync(cancellationToken);
+        return telegramPoll;
     }
 }

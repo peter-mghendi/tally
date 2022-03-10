@@ -11,7 +11,7 @@ using Web.Data;
 namespace Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
-    [Migration("20220308154430_InitialCreate")]
+    [Migration("20220310170910_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,6 +151,32 @@ namespace Web.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Web.Models.ChannelPoll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollId");
+
+                    b.HasIndex("Channel", "Identifier")
+                        .IsUnique();
+
+                    b.ToTable("ChannelPolls");
+                });
+
             modelBuilder.Entity("Web.Models.Option", b =>
                 {
                     b.Property<int>("Id")
@@ -177,22 +203,19 @@ namespace Web.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Channel")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CreatorId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Identifier")
+                    b.Property<string>("Question")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
-
-                    b.HasIndex("Channel", "Identifier")
-                        .IsUnique();
 
                     b.ToTable("Polls");
                 });
@@ -342,6 +365,17 @@ namespace Web.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Web.Models.ChannelPoll", b =>
+                {
+                    b.HasOne("Web.Models.Poll", "Poll")
+                        .WithMany("ChannelPolls")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+                });
+
             modelBuilder.Entity("Web.Models.Option", b =>
                 {
                     b.HasOne("Web.Models.Poll", "Poll")
@@ -391,6 +425,8 @@ namespace Web.Data.Migrations
 
             modelBuilder.Entity("Web.Models.Poll", b =>
                 {
+                    b.Navigation("ChannelPolls");
+
                     b.Navigation("Options");
 
                     b.Navigation("Votes");

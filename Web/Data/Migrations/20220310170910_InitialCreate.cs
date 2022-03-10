@@ -160,8 +160,8 @@ namespace Web.Data.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Channel = table.Column<int>(type: "INTEGER", nullable: false),
-                    Identifier = table.Column<string>(type: "TEXT", nullable: false),
+                    Question = table.Column<string>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatorId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -172,6 +172,27 @@ namespace Web.Data.Migrations
                         column: x => x.CreatorId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChannelPolls",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Channel = table.Column<int>(type: "INTEGER", nullable: false),
+                    Identifier = table.Column<string>(type: "TEXT", nullable: false),
+                    PollId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChannelPolls", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChannelPolls_Polls_PollId",
+                        column: x => x.PollId,
+                        principalTable: "Polls",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -266,15 +287,20 @@ namespace Web.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Options_PollId",
-                table: "Options",
+                name: "IX_ChannelPolls_Channel_Identifier",
+                table: "ChannelPolls",
+                columns: new[] { "Channel", "Identifier" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelPolls_PollId",
+                table: "ChannelPolls",
                 column: "PollId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Polls_Channel_Identifier",
-                table: "Polls",
-                columns: new[] { "Channel", "Identifier" },
-                unique: true);
+                name: "IX_Options_PollId",
+                table: "Options",
+                column: "PollId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Polls_CreatorId",
@@ -313,6 +339,9 @@ namespace Web.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ChannelPolls");
 
             migrationBuilder.DropTable(
                 name: "Votes");

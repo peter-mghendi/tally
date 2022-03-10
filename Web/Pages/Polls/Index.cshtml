@@ -1,0 +1,62 @@
+@page
+@model Web.Pages.Polls.Index
+
+@{
+    ViewData["Title"] = "Polls";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Polls[0].Id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Polls[0].Question)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Polls[0].ChannelPolls)
+        </th>
+       <th>
+           @Html.DisplayNameFor(model => model.Polls[0].Creator)
+       </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Polls[0].CreatedAt)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Polls)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Question)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ChannelPolls.Count)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Creator.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

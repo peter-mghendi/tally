@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
+using Web.Channels;
 using Web.Data;
 using Web.Models;
 using Web.Services;
@@ -25,6 +26,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<HandleUpdateService>();
+builder.Services.AddScoped<TelegramChannel>();
 
 var app = builder.Build();
 

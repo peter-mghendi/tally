@@ -20,7 +20,7 @@ public class HandleUpdateService
     {
         var handler = update.Type switch
         {
-            // UpdateType.Poll:
+            UpdateType.Poll => BotOnPollRequested(update.Poll!),
             UpdateType.Message => BotOnMessageReceived(update.Message!),
             UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!),
         };
@@ -37,6 +37,7 @@ public class HandleUpdateService
     private async Task BotOnMessageReceived(Message message)
     {
         _logger.LogInformation("Receive message type: {messageType}", message.Type);
+        _logger.LogInformation("Chat ID: {messageType}", message.Chat.Id);
         if (message.Type != MessageType.Text)
             return;
         
@@ -49,6 +50,23 @@ public class HandleUpdateService
                 "Who lives on Drury Lane?"
             });
         _logger.LogInformation("The message was sent with id: {sentMessageId}", pollMessage.MessageId);
+    }
+    
+    private async Task BotOnPollRequested(Poll poll)
+    {
+        _logger.LogInformation("Poll question: {messageType}", poll.Question);
+        // if (message.Type != MessageType.Text)
+        //     return;
+        //
+        // Message pollMessage = await _botClient.SendPollAsync(
+        //     chatId: message.Chat.Id,
+        //     question: "Do you know... The Muffin Man?",
+        //     options: new []
+        //     {
+        //         "The Muffin Man?",
+        //         "Who lives on Drury Lane?"
+        //     });
+        _logger.LogInformation("The message was sent with id: {sentMessageId}", poll.Id);
     }
 
 

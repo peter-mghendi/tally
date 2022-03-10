@@ -1,10 +1,12 @@
 namespace Web.Models;
 
-public partial class Poll
+public partial class ChannelPoll
 {
     public enum PollChannel
     {
         Telegram,
         Twitter,
+        // Discord,
+        // GitHub
     }
 }

@@ -1,11 +1,12 @@
 namespace Web.Models;
 
-public partial class Poll
+public class Poll
 {
     public int Id { get; set; }
-    public PollChannel Channel { get; set; }
-    public string Identifier { get; set; } = null!;
+    public string Question { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public User Creator { get; set; } = null!;
-    public ICollection<Option> Options { get; set; } = new List<Option>();
+    public ICollection<ChannelPoll> ChannelPolls { get; set; } = new List<ChannelPoll>();
+    public IList<Option> Options { get; set; } = Enumerable.Repeat(new Option(), 4).ToList();
     public ICollection<Vote> Votes { get; set; } = new List<Vote>();
 }

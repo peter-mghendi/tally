@@ -1,0 +1,42 @@
+@page
+@model Web.Pages.Polls.Create
+
+@{
+    ViewData["Title"] = "Create Poll";
+}
+
+<h1>Create</h1>
+
+<h4>Poll</h4>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="Poll.Question" class="form-control" placeholder="Is this thing on?"/>
+                <label asp-for="Poll.Question"></label>
+                <span asp-validation-for="Poll.Question" class="text-danger"></span>
+            </div>
+            @for (var i = 1; i <= 4; i++)
+            {
+                <div class="form-floating mb-3">
+                    <input asp-for="Poll.Options[i - 1].Text" class="form-control" placeholder="Option @i"/>
+                    <label asp-for="Poll.Options[i - 1].Text">Option @i</label>
+                    <span asp-validation-for="Poll.Options[i - 1].Text" class="text-danger"></span>
+                </div>
+            }
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-outline-primary w-100"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@* @section Scripts { *@
+@*     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} *@
+@* } *@
