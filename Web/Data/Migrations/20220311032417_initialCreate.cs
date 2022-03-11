@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Web.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -221,20 +221,15 @@ namespace Web.Data.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    UserIdentifier = table.Column<string>(type: "TEXT", nullable: false),
+                    Channel = table.Column<int>(type: "INTEGER", nullable: false),
                     VotedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     OptionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PollId = table.Column<int>(type: "INTEGER", nullable: false),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                    PollId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Votes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Votes_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Votes_Options_OptionId",
                         column: x => x.OptionId,
@@ -316,11 +311,6 @@ namespace Web.Data.Migrations
                 name: "IX_Votes_PollId",
                 table: "Votes",
                 column: "PollId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votes_UserId",
-                table: "Votes",
-                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -11,8 +11,8 @@ using Web.Data;
 namespace Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
-    [Migration("20220310170910_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20220311032417_initialCreate")]
+    partial class initialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -290,13 +290,16 @@ namespace Web.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Channel")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("OptionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PollId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("UserIdentifier")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -308,8 +311,6 @@ namespace Web.Data.Migrations
                     b.HasIndex("OptionId");
 
                     b.HasIndex("PollId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Votes");
                 });
@@ -410,17 +411,9 @@ namespace Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Web.Models.User", "User")
-                        .WithMany("Votes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Option");
 
                     b.Navigation("Poll");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Web.Models.Poll", b =>
@@ -435,8 +428,6 @@ namespace Web.Data.Migrations
             modelBuilder.Entity("Web.Models.User", b =>
                 {
                     b.Navigation("Polls");
-
-                    b.Navigation("Votes");
                 });
 #pragma warning restore 612, 618
         }

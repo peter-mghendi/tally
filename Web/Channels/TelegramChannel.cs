@@ -1,8 +1,6 @@
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Web.Data;
 using Web.Models;
-using Poll = Web.Models.Poll;
 
 namespace Web.Channels;
 
@@ -20,12 +18,18 @@ public class TelegramChannel
     public async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,
         CancellationToken cancellationToken = default)
     {
-        Message pollMessage = await _botClient.SendPollAsync(332474019, question, options, cancellationToken: cancellationToken);
+        var pollMessage = await _botClient.SendPollAsync(
+            332474019,
+            question: question,
+            options: options,
+            isAnonymous: false,
+            cancellationToken: cancellationToken
+        );
 
         var telegramPoll = new ChannelPoll
         {
-            Channel = ChannelPoll.PollChannel.Telegram,
-            Identifier = pollMessage.MessageId.ToString()
+            Channel = PollChannel.Telegram,
+            Identifier = pollMessage.Poll!.Id
         };
 
         return telegramPoll;

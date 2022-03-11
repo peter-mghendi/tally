@@ -10,31 +10,64 @@
 <h4>Poll</h4>
 <hr/>
 <div class="row">
-    <div class="col-md-4">
-        <form method="post">
+    <div>
+        <form method="post" id="pollForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Poll.Question" class="form-control" placeholder="Is this thing on?"/>
-                <label asp-for="Poll.Question"></label>
-                <span asp-validation-for="Poll.Question" class="text-danger"></span>
-            </div>
-            @for (var i = 1; i <= 4; i++)
-            {
-                <div class="form-floating mb-3">
-                    <input asp-for="Poll.Options[i - 1].Text" class="form-control" placeholder="Option @i"/>
-                    <label asp-for="Poll.Options[i - 1].Text">Option @i</label>
-                    <span asp-validation-for="Poll.Options[i - 1].Text" class="text-danger"></span>
+            <div class="row">
+                <div class="col-12 col-sm-8 col-md-6">
+                    <fieldset>
+                        <legend>General Information</legend>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Poll.Question" class="form-control" placeholder="Is this thing on?"/>
+                            <label asp-for="Poll.Question"></label>
+                            <span asp-validation-for="Poll.Question" class="text-danger"></span>
+                        </div>
+                        @for (var i = 1; i <= 4; i++)
+                        {
+                            <div class="form-floating mb-3">
+                                <input asp-for="Poll.Options[i - 1].Text" class="form-control" placeholder="Option @i"/>
+                                <label asp-for="Poll.Options[i - 1].Text">Option @i</label>
+                                <span asp-validation-for="Poll.Options[i - 1].Text" class="text-danger"></span>
+                            </div>
+                        }
+                    </fieldset>
                 </div>
-            }
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-outline-primary w-100"/>
+                <div class="col-12 col-sm-8 col-md-6">
+                    <fieldset>
+                        <legend>Poll Channels</legend>
+                        <div class="row align-items-center">
+                            <div class="col-3">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="channel-telegram">
+                                    <label class="form-check-label" for="channel-telegram">Telegram</label>
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="telegram-chat-id" placeholder="00000000"/>
+                                    <label for="telegram-chat-id">Telegram Chat ID</label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
             </div>
         </form>
+        <div class="row">
+            <div class="col">
+                <a asp-page="Index" class="btn btn-outline-warning w-100" role="button">Back to List</a>
+            </div>
+            <div class="col">
+                <input type="submit" form="pollForm" value="Create" class="btn btn-outline-primary w-100"/>
+            </div>
+            
+            
+        </div>
     </div>
 </div>
 
 <div>
-    <a asp-page="Index">Back to List</a>
+    
 </div>
 
 @* @section Scripts { *@
