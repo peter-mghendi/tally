@@ -3,7 +3,7 @@ using Web.Models;
 
 namespace Web.Channels;
 
-public class TwitterChannel
+public class TwitterChannel : Channel
 {
     private readonly TwitterContext _context;
     private readonly ILogger<TwitterChannel> _logger;
@@ -14,7 +14,9 @@ public class TwitterChannel
         _logger = logger;
     }
 
-    public async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,
+    public override PollChannel PollChannel => PollChannel.Twitter;
+
+    public override async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,
         CancellationToken cancellationToken = default)
     {
         var pollTweet = await _context.TweetPollAsync(
@@ -23,13 +25,7 @@ public class TwitterChannel
             options: options,
             cancelToken: cancellationToken
         );
-        
-        var telegramPoll = new ChannelPoll
-        {
-            Channel = PollChannel.Twitter,
-            Identifier = pollTweet?.Attachments?.PollIds?[0] ?? string.Empty
-        };
 
-        return telegramPoll;
+        return BuildPoll(pollTweet?.Attachments?.PollIds?[0] ?? string.Empty);
     }
 }

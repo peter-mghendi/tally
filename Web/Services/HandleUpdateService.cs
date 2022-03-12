@@ -22,14 +22,15 @@ public class HandleUpdateService
         _context = context;
     }
 
-    public async Task EchoAsync(Update update)
+    public async Task HandleAsync(Update update)
     {
         var handler = update.Type switch
         {
             UpdateType.Poll => BotOnPollRequested(update.Poll!),
             UpdateType.PollAnswer => BotOnPollAnswered(update.PollAnswer!),
             UpdateType.Message => BotOnMessageReceived(update.Message!),
-            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!)
+            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!),
+            _ => Task.Run(() => _logger.LogInformation("Unsupported update type received."))
         };
         try
         {
@@ -44,7 +45,6 @@ public class HandleUpdateService
     private async Task BotOnMessageReceived(Message message)
     {
         _logger.LogInformation("Receive message type: {messageType}", message.Type);
-        _logger.LogInformation("Chat ID: {messageType}", message.Chat.Id);
         if (message.Type != MessageType.Text)
             return;
 
@@ -53,10 +53,11 @@ public class HandleUpdateService
         _logger.LogInformation("The message was sent with id: {sentMessageId}", reply.MessageId);
     }
     
-    private async Task BotOnPollRequested(Poll poll)
+    private Task BotOnPollRequested(Poll poll)
     {
         _logger.LogInformation("Poll question: {messageType}", poll.Question);
         _logger.LogInformation("The poll was sent with id: {sentMessageId}", poll.Id);
+        return Task.CompletedTask;
     }
     
     private async Task BotOnPollAnswered(PollAnswer pollAnswer)
@@ -69,10 +70,8 @@ public class HandleUpdateService
             .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram);
         var poll = channelPoll.Poll;
         var userIdentifier = pollAnswer.User.Id.ToString();
-        
-        // _logger.LogInformation("Poll options are null: {null}", poll.Options[pollAnswer.OptionIds[0]].Text);
 
-        if (pollAnswer.OptionIds.Length is 0)
+        if (pollAnswer.OptionIds.Length <= 0)
         {
             var vote = poll.Votes.Single(v => v.Channel == PollChannel.Telegram && v.UserIdentifier == userIdentifier);
             poll.Votes.Remove(vote);

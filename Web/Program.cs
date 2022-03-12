@@ -44,6 +44,7 @@ builder.Services.AddScoped<HandleUpdateService>();
 
 builder.Services.AddScoped<TelegramChannel>();
 builder.Services.AddScoped<TwitterChannel>();
+builder.Services.AddScoped<ChannelWrapper>();
 
 var app = builder.Build();
 
