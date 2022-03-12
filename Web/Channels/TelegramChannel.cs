@@ -1,18 +1,15 @@
 using Telegram.Bot;
-using Web.Data;
 using Web.Models;
 
 namespace Web.Channels;
 
 public class TelegramChannel
 {
-    private readonly TallyContext _context;
     private readonly ITelegramBotClient _botClient;
 
-    public TelegramChannel(ITelegramBotClient botClient, TallyContext context)
+    public TelegramChannel(ITelegramBotClient botClient)
     {
         _botClient = botClient;
-        _context = context;
     }
 
     public async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,

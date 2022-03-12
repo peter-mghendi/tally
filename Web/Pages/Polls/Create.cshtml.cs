@@ -11,25 +11,32 @@ namespace Web.Pages.Polls;
 [Authorize]
 public class Create : PageModel
 {
-    private readonly TallyContext _context;
-    private readonly TelegramChannel _channel;
     private readonly ILogger<Create> _logger;
+    private readonly TallyContext _context;
+    private readonly TelegramChannel _telegramChannel;
+    private readonly TwitterChannel _twitterChannel;
     private readonly UserManager<User> _userManager;
 
     [BindProperty] public Poll Poll { get; set; }
 
-    public Create(TallyContext context, TelegramChannel channel, ILogger<Create> logger, UserManager<User> userManager)
+    public Create(
+        ILogger<Create> logger,
+        TallyContext context,
+        TelegramChannel telegramChannel,
+        TwitterChannel twitterChannel,
+        UserManager<User> userManager
+    )
     {
-        _context = context;
-        _channel = channel;
         _logger = logger;
+        _context = context;
+        _telegramChannel = telegramChannel;
+        _twitterChannel = twitterChannel;
         _userManager = userManager;
     }
 
     public IActionResult OnGet()
     {
-        Poll = new();
-        Poll.Options = Enumerable.Repeat(new Option(), 4).ToList();
+        Poll = new Poll {Options = Enumerable.Repeat(new Option(), 4).ToList()};
         return Page();
     }
 
@@ -40,7 +47,8 @@ public class Create : PageModel
 
         Poll.ChannelPolls = new List<ChannelPoll>
         {
-            await _channel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
+            await _telegramChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
+            await _twitterChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
         };
 
         await _context.Polls.AddAsync(Poll);

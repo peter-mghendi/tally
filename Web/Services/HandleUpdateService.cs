@@ -29,7 +29,7 @@ public class HandleUpdateService
             UpdateType.Poll => BotOnPollRequested(update.Poll!),
             UpdateType.PollAnswer => BotOnPollAnswered(update.PollAnswer!),
             UpdateType.Message => BotOnMessageReceived(update.Message!),
-            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!),
+            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!)
         };
         try
         {
@@ -79,7 +79,7 @@ public class HandleUpdateService
         }
         else
         {
-            poll.Votes.Add(new()
+            poll.Votes.Add(new Vote
             {
                 Channel = PollChannel.Telegram,
                 Option = poll.Options[pollAnswer.OptionIds[0]],
@@ -90,16 +90,16 @@ public class HandleUpdateService
         await _context.SaveChangesAsync();
     }
 
-    public Task HandleErrorAsync(Exception exception)
+    private Task HandleErrorAsync(Exception exception)
     {
-        var ErrorMessage = exception switch
+        var errorMessage = exception switch
         {
             ApiRequestException apiRequestException =>
                 $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
             _ => exception.ToString()
         };
 
-        _logger.LogInformation("HandleError: {ErrorMessage}", ErrorMessage);
+        _logger.LogInformation("HandleError: {ErrorMessage}", errorMessage);
         return Task.CompletedTask;
     }
 }

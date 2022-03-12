@@ -49,6 +49,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row align-items-center">
+                            <div class="col-3">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="channel-twitter">
+                                    <label class="form-check-label" for="channel-twitter">Twitter</label>
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-floating mb-3">
+                                    <input type="datetime-local" class="form-control" id="twitter-duration"
+                                           min="@DateTime.Now.ToString("s")" max="@DateTime.Now.AddDays(7).ToString("s")"/>
+                                    <label for="twitter-duration">Twitter Duration</label>
+                                </div>
+                            </div>
+                        </div>
                     </fieldset>
                 </div>
             </div>
@@ -60,14 +75,14 @@
             <div class="col">
                 <input type="submit" form="pollForm" value="Create" class="btn btn-outline-primary w-100"/>
             </div>
-            
-            
+
+
         </div>
     </div>
 </div>
 
 <div>
-    
+
 </div>
 
 @* @section Scripts { *@

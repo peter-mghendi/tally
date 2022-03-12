@@ -1,6 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
-using Web.Models;
+using Web.Models.Configuration;
 
 namespace Web.Services;
 
@@ -8,7 +8,7 @@ public class ConfigureWebhook : IHostedService
 {
     private readonly ILogger<ConfigureWebhook> _logger;
     private readonly IServiceProvider _services;
-    private readonly BotConfiguration _botConfig;
+    private readonly TelegramBotConfiguration _telegramBotConfig;
 
     public ConfigureWebhook(ILogger<ConfigureWebhook> logger,
                             IServiceProvider serviceProvider,
@@ -16,7 +16,7 @@ public class ConfigureWebhook : IHostedService
     {
         _logger = logger;
         _services = serviceProvider;
-        _botConfig = configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+        _telegramBotConfig = configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>();
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -25,14 +25,10 @@ public class ConfigureWebhook : IHostedService
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         // Configure custom endpoint per Telegram API recommendations:
-        // https://core.telegram.org/bots/api#setwebhook
-        // If you'd like to make sure that the Webhook request comes from Telegram, we recommend
-        // using a secret path in the URL, e.g. https://www.example.com/<token>.
-        // Since nobody else knows your bot's token, you can be pretty sure it's us.
-        var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
+        // REF: https://core.telegram.org/bots/api#setwebhook
+        var webhookAddress = @$"{_telegramBotConfig.HostAddress}/bot/{_telegramBotConfig.BotToken}";
         _logger.LogInformation("Setting webhook: {webhookAddress}", webhookAddress);
-        await botClient.SetWebhookAsync(
-            url: webhookAddress,
+        await botClient.SetWebhookAsync(webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
             cancellationToken: cancellationToken);
     }
