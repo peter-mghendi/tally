@@ -1,4 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Telegram.Bot;
+using Web.Data;
 using Web.Models;
 using Web.Models.Configuration;
 
@@ -8,11 +11,13 @@ public class TelegramChannel : Channel
 {
     private readonly ITelegramBotClient _botClient;
     private readonly long _chatId;
+    private readonly TallyContext _tallyContext;
 
-    public TelegramChannel(ITelegramBotClient botClient, IConfiguration configuration)
+    public TelegramChannel(ITelegramBotClient botClient, IConfiguration configuration, TallyContext tallyContext)
     {
         _botClient = botClient;
         _chatId = configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>().ChatId;
+        _tallyContext = tallyContext;
     }
 
     public override PollChannel PollChannel => PollChannel.Telegram;
@@ -29,5 +34,11 @@ public class TelegramChannel : Channel
         );
 
         return BuildPoll(pollMessage.Poll!.Id);
+    }
+
+    public override async Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        return await _tallyContext.Options.Where(o => o.Poll.Id == channelPoll.Poll.Id)
+            .Select(o => new PollResult(o.Id, o.Votes.Count)).ToListAsync(cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
 using LinqToTwitter;
+using LinqToTwitter.Common;
 using Web.Models;
 
 namespace Web.Channels;
@@ -25,7 +26,18 @@ public class TwitterChannel : Channel
             options: options,
             cancelToken: cancellationToken
         );
+        
+        return BuildPoll(pollTweet!.ID!);
+    }
 
-        return BuildPoll(pollTweet?.Attachments?.PollIds?[0] ?? string.Empty);
+    public override Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new List<PollResult>
+        {
+            new(5, 35),
+            new(6, 42),
+            new(7, 14),
+            new(8, 23),
+        });
     }
 }
