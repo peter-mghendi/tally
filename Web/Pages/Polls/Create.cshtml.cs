@@ -19,7 +19,8 @@ public class Create : PageModel
     private readonly IChannel _twitterChannel;
     private readonly UserManager<User> _userManager;
 
-    [BindProperty] public Poll Poll { get; set; }
+    [BindProperty] 
+    public Poll Poll { get; set; }
 
     public Create(
         ILogger<Create> logger,

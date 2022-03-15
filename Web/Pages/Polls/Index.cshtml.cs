@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Web.Data;
@@ -9,6 +10,7 @@ public class Index : PageModel
 {
     private readonly TallyContext _context;
 
+    [BindProperty]
     public IList<Poll> Polls { get; set; }
 
     public Index(TallyContext context)

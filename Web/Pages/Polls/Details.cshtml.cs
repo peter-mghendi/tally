@@ -17,9 +17,14 @@ public class Details : PageModel
     private readonly IChannel _twitterChannel;
     private readonly UserManager<User> _userManager;
 
-    [FromQuery] public int Id { get; set; }
-    [BindProperty] public Poll Poll { get; set; }
-    [BindProperty] public Dictionary<string, IEnumerable<PollResult>> Results { get; set; }
+    [BindProperty(SupportsGet = true)] 
+    public int Id { get; set; }
+    
+    [BindProperty] 
+    public Poll Poll { get; set; }
+    
+    [BindProperty] 
+    public Dictionary<string, IEnumerable<PollResult>> Results { get; set; }
 
     public Details(
         ILogger<Create> logger,

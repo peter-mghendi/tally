@@ -17,20 +17,22 @@ public class Delete : PageModel
         _context = context;
     }
     
+    [BindProperty(SupportsGet = true)] 
+    public int Id { get; set; }
+    
+    [BindProperty]
     public Poll Poll { get; set; }
     
-    public async Task<IActionResult> OnGetAsync(int? id)
+    public async Task<IActionResult> OnGetAsync()
     {
-        if (id is null) return NotFound();
-        Poll = await _context.Polls.Include(p => p.ChannelPolls).SingleAsync(p => p.Id == id);
+        Poll = await _context.Polls.Include(p => p.ChannelPolls).SingleAsync(p => p.Id == Id);
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int? id)
+    public async Task<IActionResult> OnPostAsync()
     {
-        if (id is null) return NotFound();
-        Poll = await _context.Polls.SingleAsync(p => p.Id == id);
-        _logger.LogInformation("Deleting poll with ID: {ID}", id);
+        Poll = await _context.Polls.SingleAsync(p => p.Id == Id);
+        _logger.LogInformation("Deleting poll with id: {Id}", Id);
         return RedirectToPage("./Index");
     }
 }
