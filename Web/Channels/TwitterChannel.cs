@@ -32,12 +32,11 @@ public class TwitterChannel : Channel
 
     public override Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new List<PollResult>
-        {
-            new(5, 35),
-            new(6, 42),
-            new(7, 14),
-            new(8, 23),
-        });
+        var random = new Random();
+        var options = 4;
+        var start = ((channelPoll.Poll.Id - 1) * options) + 1;
+        var optionVotes = Enumerable.Range(start, options)
+            .Select<int, PollResult>(i => new(i, random.Next(20, 50)));
+        return Task.FromResult(optionVotes.ToList());
     }
 }

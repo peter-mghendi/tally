@@ -5,7 +5,7 @@
     ViewData["Title"] = "Create Poll";
 }
 
-<h1>Create</h1>
+<h1>@ViewData["Title"]</h1>
 
 <h4>Poll</h4>
 <hr/>
@@ -85,6 +85,6 @@
 
 </div>
 
-@* @section Scripts { *@
-@*     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} *@
-@* } *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

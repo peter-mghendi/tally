@@ -41,6 +41,7 @@ public class Details : PageModel
     {
         Poll = await _context.Polls
             .Include(p => p.ChannelPolls)
+            .Include(p => p.Options)
             .SingleAsync(p => p.Id == Id);
 
         var telegramPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Telegram);
