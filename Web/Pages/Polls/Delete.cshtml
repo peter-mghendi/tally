@@ -15,26 +15,7 @@
 <div>
     <h4>Poll</h4>
     <hr/>
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Poll.Question)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Poll.Question)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Poll.ChannelPolls)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Poll.ChannelPolls.Count)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Poll.CreatedAt)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Poll.CreatedAt)
-        </dd>
-    </dl>
+    <partial name="Shared/_PollData" model="Model.Poll" />
 
     <form method="post">
         <input type="hidden" asp-for="Poll.Id"/>

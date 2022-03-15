@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Web.Data.Migrations
 {
-    public partial class initialCreate : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -161,7 +161,8 @@ namespace Web.Data.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Question = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatorId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -224,8 +225,8 @@ namespace Web.Data.Migrations
                     UserIdentifier = table.Column<string>(type: "TEXT", nullable: false),
                     Channel = table.Column<int>(type: "INTEGER", nullable: false),
                     VotedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    OptionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PollId = table.Column<int>(type: "INTEGER", nullable: false)
+                    PollId = table.Column<int>(type: "INTEGER", nullable: false),
+                    OptionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

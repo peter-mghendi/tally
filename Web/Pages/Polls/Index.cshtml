@@ -23,11 +23,11 @@
         <th>
             @Html.DisplayNameFor(model => model.Polls[0].ChannelPolls)
         </th>
-       <th>
-           @Html.DisplayNameFor(model => model.Polls[0].Creator)
-       </th>
         <th>
-            @Html.DisplayNameFor(model => model.Polls[0].CreatedAt)
+            @Html.DisplayNameFor(model => model.Polls[0].StartedAt)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Polls[0].EndedAt)
         </th>
         <th></th>
     </tr>
@@ -46,10 +46,10 @@
                 @Html.DisplayFor(modelItem => item.ChannelPolls.Count)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Creator.Email)
+                @Html.DisplayFor(modelItem => item.StartedAt)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
+                @Html.DisplayFor(modelItem => item.EndedAt)
             </td>
             <td>
                 <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |

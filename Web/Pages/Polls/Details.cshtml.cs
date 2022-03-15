@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,6 +10,7 @@ using Web.Models;
 
 namespace Web.Pages.Polls;
 
+[Authorize]
 public class Details : PageModel
 {
     private readonly ILogger<Create> _logger;

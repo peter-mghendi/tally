@@ -11,8 +11,8 @@ using Web.Data;
 namespace Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
-    [Migration("20220311032417_initialCreate")]
-    partial class initialCreate
+    [Migration("20220315131603_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -203,14 +203,17 @@ namespace Web.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("CreatorId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CreatorId")
+                    b.Property<DateTime?>("EndedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Question")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -400,7 +403,7 @@ namespace Web.Data.Migrations
             modelBuilder.Entity("Web.Models.Vote", b =>
                 {
                     b.HasOne("Web.Models.Option", "Option")
-                        .WithMany()
+                        .WithMany("Votes")
                         .HasForeignKey("OptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -414,6 +417,11 @@ namespace Web.Data.Migrations
                     b.Navigation("Option");
 
                     b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("Web.Models.Option", b =>
+                {
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("Web.Models.Poll", b =>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Web.Models;
 
 namespace Web.Pages.Polls;
 
+[Authorize]
 public class Delete : PageModel
 {
     private readonly ILogger<Delete> _logger;
