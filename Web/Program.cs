@@ -15,12 +15,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var telegramBotConfig = builder.Configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>();
 var twitterBotConfig = builder.Configuration.GetSection("TwitterBotConfiguration").Get<TwitterBotConfiguration>();
 
-// Telegram Webhooks
-builder.Services.AddHostedService<ConfigureWebhook>();
+// Telegram
 builder.Services.AddHttpClient("tgwebhook")
     .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(telegramBotConfig.BotToken, client));
+builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddScoped<TelegramUpdateService>();
 
-// Twitter Context
+// Twitter
 builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
 {
     CredentialStore = new SingleUserInMemoryCredentialStore
@@ -31,6 +32,7 @@ builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
         AccessTokenSecret = twitterBotConfig.AccessTokenSecret
     }
 }));
+builder.Services.AddHostedService<TwitterUpdateService>();
 
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -39,8 +41,6 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
     .AddEntityFrameworkStores<TallyContext>();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
-
-builder.Services.AddScoped<HandleUpdateService>();
 
 builder.Services.AddScoped<TelegramChannel>();
 builder.Services.AddScoped<TwitterChannel>();

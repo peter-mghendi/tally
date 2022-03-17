@@ -9,13 +9,13 @@ using Poll = Telegram.Bot.Types.Poll;
 
 namespace Web.Services;
 
-public class HandleUpdateService
+public class TelegramUpdateService
 {
     private readonly ITelegramBotClient _botClient;
-    private readonly ILogger<HandleUpdateService> _logger;
+    private readonly ILogger<TelegramUpdateService> _logger;
     private readonly TallyContext _context;
 
-    public HandleUpdateService(ITelegramBotClient botClient, ILogger<HandleUpdateService> logger, TallyContext context)
+    public TelegramUpdateService(ITelegramBotClient botClient, ILogger<TelegramUpdateService> logger, TallyContext context)
     {
         _botClient = botClient;
         _logger = logger;
@@ -66,19 +66,19 @@ public class HandleUpdateService
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.Options)
             .Include(cp => cp.Poll)
-            .ThenInclude(p => p.Votes)
+            .ThenInclude(p => p.LiveVotes)
             .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram);
         var poll = channelPoll.Poll;
         var userIdentifier = pollAnswer.User.Id.ToString();
 
         if (pollAnswer.OptionIds.Length <= 0)
         {
-            var vote = poll.Votes.Single(v => v.Channel == PollChannel.Telegram && v.UserIdentifier == userIdentifier);
-            poll.Votes.Remove(vote);
+            poll.LiveVotes.Remove(poll.LiveVotes
+                .Single(v => v.Channel == PollChannel.Telegram && v.UserIdentifier == userIdentifier));
         }
         else
         {
-            poll.Votes.Add(new Vote
+            poll.LiveVotes.Add(new LiveVote
             {
                 Channel = PollChannel.Telegram,
                 Option = poll.Options[pollAnswer.OptionIds[0]],

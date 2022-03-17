@@ -36,9 +36,10 @@ public class TelegramChannel : Channel
         return BuildPoll(pollMessage.Poll!.Id);
     }
 
-    public override async Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        return await _tallyContext.Options.Where(o => o.Poll.Id == channelPoll.Poll.Id)
-            .Select(o => new PollResult(o.Id, o.Votes.Count)).ToListAsync(cancellationToken);
+        var query = from option in _tallyContext.Options where option.Poll.Id == channelPoll.Poll.Id
+            select new PollResult(option.Id, option.LiveVotes.Count(lv => lv.Channel == PollChannel.Telegram));
+        return LiveResult(await query.ToListAsync(cancellationToken));
     }
 }

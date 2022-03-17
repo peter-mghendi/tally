@@ -8,7 +8,8 @@ public class TallyContext : IdentityDbContext<User>
 {
     public DbSet<Poll> Polls => Set<Poll>();
     public DbSet<ChannelPoll> ChannelPolls => Set<ChannelPoll>();
-    public DbSet<Vote> Votes => Set<Vote>();
+    public DbSet<CachedVote> CachedVotes => Set<CachedVote>();
+    public DbSet<LiveVote> LiveVotes => Set<LiveVote>();
     public DbSet<Option> Options => Set<Option>();
     public TallyContext(DbContextOptions<TallyContext> options)
         : base(options)

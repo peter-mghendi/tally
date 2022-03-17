@@ -6,30 +6,27 @@
     ViewData["Title"] = "Poll Details";
 
     var channelTotals = Model.Results
-        .Select(pair => (Channel: pair.Key, Votes: pair.Value.Sum(r => r.Votes)))
+        .Select(pair => (Channel: pair.Key, Votes: pair.Value.Results.Sum(r => r.Votes)))
         .OrderByDescending(tuple => tuple.Votes)
         .ToImmutableArray();
 
     var optionTotalsDict = new Dictionary<int, int>();
-    foreach (var channel in Model.Results)
+    foreach (var (optionId, votes) in Model.Results.SelectMany(channel => channel.Value.Results))
     {
-        foreach (var option in channel.Value)
-        {
-            if (optionTotalsDict.ContainsKey(option.OptionId))
-                optionTotalsDict[option.OptionId] += option.Votes;
-            else
-                optionTotalsDict[option.OptionId] = option.Votes;
-        }
+        if (optionTotalsDict.ContainsKey(optionId))
+            optionTotalsDict[optionId] += votes;
+        else
+            optionTotalsDict[optionId] = votes;
     }
 
     var optionTotals = optionTotalsDict
         .Select(pair => (Option: Model.Poll.Options.Single(o => o.Id == pair.Key).Text, Votes: pair.Value))
         .ToList();
-    
+
     var orderedOptionTotals = optionTotals
         .OrderByDescending(tuple => tuple.Votes)
         .ToImmutableArray();
-        
+
     var totalVotes = channelTotals.Sum(ct => ct.Votes);
 }
 
@@ -58,7 +55,7 @@
 <div class="row mb-5">
     <p class="display-6">Details</p>
     <div class="col-12 col-md-6">
-        <partial name="Shared/_PollData" model="Model.Poll" />
+        <partial name="Shared/_PollData" model="Model.Poll"/>
     </div>
     <div class="col-12 col-md-6">
         <div class="form-check mb-3">
@@ -82,6 +79,50 @@
             <label for="platform-web">Web</label>
         </div>
     </div>
+</div>
+
+<div class="mb-5">
+    <p class="display-6 text-muted mb-3">Live Results</p>
+    <table class="table table-borderless table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Channel</th>
+            @foreach (var option in optionTotals)
+            {
+                <th scope="col">@option.Option</th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var (channel, (pollResults, live, lastRefreshed)) in Model.Results)
+        {
+            <tr>
+                <th scope="row">
+                    @if (live)
+                    {
+                        <div class="spinner-grow spinner-grow-sm text-info me-2" role="status" title="This channel supports live updates. These results are current.">
+                            <span class="visually-hidden">Live</span>
+                        </div>
+                    }
+                    else if (lastRefreshed is not null)
+                    {
+                        <i class="bi bi-slash-circle-fill text-danger me-2" title="This channel does not support live updates. These results were last refreshed at @lastRefreshed."></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-slash-circle-fill text-danger me-2" title="This channel does not support live updates. These results may be up to 3 hours old."></i>
+                    }
+
+                    @channel
+                </th>
+                @foreach (var total in pollResults)
+                {
+                    <td>@total.Votes</td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
 </div>
 
 <div class="mb-5">
@@ -114,7 +155,7 @@
         data: {
             labels: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Option))),
             datasets: [{
-                label: '# of Votes per Option',
+                label: '# of LiveVotes per Option',
                 data: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Votes))),
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
@@ -145,7 +186,7 @@
          data: {
              labels: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Channel))),
              datasets: [{
-               label: '# of Votes per Channel',
+               label: '# of LiveVotes per Channel',
                data: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Votes))),
                backgroundColor: [
                  'rgb(255, 99, 132)',

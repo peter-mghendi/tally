@@ -1,5 +1,7 @@
 using LinqToTwitter;
-using LinqToTwitter.Common;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Web.Data;
 using Web.Models;
 
 namespace Web.Channels;
@@ -7,12 +9,12 @@ namespace Web.Channels;
 public class TwitterChannel : Channel
 {
     private readonly TwitterContext _context;
-    private readonly ILogger<TwitterChannel> _logger;
+    private readonly TallyContext _tallyContext;
 
-    public TwitterChannel(TwitterContext context, ILogger<TwitterChannel> logger)
+    public TwitterChannel(TwitterContext context, TallyContext tallyContext, ILogger<TwitterChannel> logger)
     {
         _context = context;
-        _logger = logger;
+        _tallyContext = tallyContext;
     }
 
     public override PollChannel PollChannel => PollChannel.Twitter;
@@ -26,17 +28,17 @@ public class TwitterChannel : Channel
             options: options,
             cancelToken: cancellationToken
         );
-        
+
         return BuildPoll(pollTweet!.ID!);
     }
 
-    public override Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll,
+        CancellationToken cancellationToken = default)
     {
-        var random = new Random();
-        var options = 4;
-        var start = ((channelPoll.Poll.Id - 1) * options) + 1;
-        var optionVotes = Enumerable.Range(start, options)
-            .Select<int, PollResult>(i => new(i, random.Next(20, 50)));
-        return Task.FromResult(optionVotes.ToList());
+        var items = await _tallyContext.CachedVotes.Include(cv => cv.Option)
+            .Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == channelPoll.Poll.Id)
+            .Select(cv => new {Result = new PollResult(cv.Option.Id, cv.Count), Refreshed = cv.LastRefreshedAt})
+            .ToListAsync(cancellationToken);
+        return CachedResult(items.Select(i => i.Result).ToList(), items.Min(i => i.Refreshed));
     }
 }

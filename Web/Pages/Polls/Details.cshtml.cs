@@ -26,7 +26,7 @@ public class Details : PageModel
     public Poll Poll { get; set; }
     
     [BindProperty] 
-    public Dictionary<string, IEnumerable<PollResult>> Results { get; set; }
+    public Dictionary<string, ChannelResult> Results { get; set; }
 
     public Details(
         ILogger<Create> logger,
@@ -54,7 +54,7 @@ public class Details : PageModel
         var telegramPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Telegram);
         var twitterPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Twitter);
 
-        Results = new Dictionary<string, IEnumerable<PollResult>>
+        Results = new Dictionary<string, ChannelResult>
         {
             [nameof(PollChannel.Telegram)] = await _telegramChannel.CountVotesAsync(telegramPoll),
             [nameof(PollChannel.Twitter)] = await _twitterChannel.CountVotesAsync(twitterPoll),

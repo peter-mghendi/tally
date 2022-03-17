@@ -217,7 +217,36 @@ namespace Web.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Votes",
+                name: "CachedVotes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Count = table.Column<int>(type: "INTEGER", nullable: false),
+                    Channel = table.Column<int>(type: "INTEGER", nullable: false),
+                    LastRefreshedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    OptionId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PollId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CachedVotes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CachedVotes_Options_OptionId",
+                        column: x => x.OptionId,
+                        principalTable: "Options",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CachedVotes_Polls_PollId",
+                        column: x => x.PollId,
+                        principalTable: "Polls",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LiveVotes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -230,15 +259,15 @@ namespace Web.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Votes", x => x.Id);
+                    table.PrimaryKey("PK_LiveVotes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Votes_Options_OptionId",
+                        name: "FK_LiveVotes_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Votes_Polls_PollId",
+                        name: "FK_LiveVotes_Polls_PollId",
                         column: x => x.PollId,
                         principalTable: "Polls",
                         principalColumn: "Id",
@@ -283,6 +312,16 @@ namespace Web.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_CachedVotes_OptionId",
+                table: "CachedVotes",
+                column: "OptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CachedVotes_PollId",
+                table: "CachedVotes",
+                column: "PollId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChannelPolls_Channel_Identifier",
                 table: "ChannelPolls",
                 columns: new[] { "Channel", "Identifier" },
@@ -294,6 +333,16 @@ namespace Web.Data.Migrations
                 column: "PollId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LiveVotes_OptionId",
+                table: "LiveVotes",
+                column: "OptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LiveVotes_PollId",
+                table: "LiveVotes",
+                column: "PollId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Options_PollId",
                 table: "Options",
                 column: "PollId");
@@ -302,16 +351,6 @@ namespace Web.Data.Migrations
                 name: "IX_Polls_CreatorId",
                 table: "Polls",
                 column: "CreatorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votes_OptionId",
-                table: "Votes",
-                column: "OptionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votes_PollId",
-                table: "Votes",
-                column: "PollId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -332,10 +371,13 @@ namespace Web.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CachedVotes");
+
+            migrationBuilder.DropTable(
                 name: "ChannelPolls");
 
             migrationBuilder.DropTable(
-                name: "Votes");
+                name: "LiveVotes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

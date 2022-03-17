@@ -7,10 +7,10 @@ namespace Web.Controllers;
 public class WebhookController : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Post([FromServices] HandleUpdateService handleUpdateService,
+    public async Task<IActionResult> Post([FromServices] TelegramUpdateService telegramUpdateService,
         [FromBody] Update update)
     {
-        await handleUpdateService.HandleAsync(update);
+        await telegramUpdateService.HandleAsync(update);
         return Ok();
     }
 }

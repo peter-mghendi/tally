@@ -149,6 +149,36 @@ namespace Web.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Web.Models.CachedVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastRefreshedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OptionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionId");
+
+                    b.HasIndex("PollId");
+
+                    b.ToTable("CachedVotes");
+                });
+
             modelBuilder.Entity("Web.Models.ChannelPoll", b =>
                 {
                     b.Property<int>("Id")
@@ -173,6 +203,37 @@ namespace Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("ChannelPolls");
+                });
+
+            modelBuilder.Entity("Web.Models.LiveVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("OptionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserIdentifier")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionId");
+
+                    b.HasIndex("PollId");
+
+                    b.ToTable("LiveVotes");
                 });
 
             modelBuilder.Entity("Web.Models.Option", b =>
@@ -285,37 +346,6 @@ namespace Web.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Web.Models.Vote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Channel")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("OptionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("PollId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserIdentifier")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("VotedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OptionId");
-
-                    b.HasIndex("PollId");
-
-                    b.ToTable("Votes");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -367,6 +397,25 @@ namespace Web.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Web.Models.CachedVote", b =>
+                {
+                    b.HasOne("Web.Models.Option", "Option")
+                        .WithMany("CachedVotes")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Models.Poll", "Poll")
+                        .WithMany("CachedVotes")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Option");
+
+                    b.Navigation("Poll");
+                });
+
             modelBuilder.Entity("Web.Models.ChannelPoll", b =>
                 {
                     b.HasOne("Web.Models.Poll", "Poll")
@@ -374,6 +423,25 @@ namespace Web.Data.Migrations
                         .HasForeignKey("PollId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("Web.Models.LiveVote", b =>
+                {
+                    b.HasOne("Web.Models.Option", "Option")
+                        .WithMany("LiveVotes")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Models.Poll", "Poll")
+                        .WithMany("LiveVotes")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Option");
 
                     b.Navigation("Poll");
                 });
@@ -398,37 +466,22 @@ namespace Web.Data.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("Web.Models.Vote", b =>
-                {
-                    b.HasOne("Web.Models.Option", "Option")
-                        .WithMany("Votes")
-                        .HasForeignKey("OptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Web.Models.Poll", "Poll")
-                        .WithMany("Votes")
-                        .HasForeignKey("PollId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Option");
-
-                    b.Navigation("Poll");
-                });
-
             modelBuilder.Entity("Web.Models.Option", b =>
                 {
-                    b.Navigation("Votes");
+                    b.Navigation("CachedVotes");
+
+                    b.Navigation("LiveVotes");
                 });
 
             modelBuilder.Entity("Web.Models.Poll", b =>
                 {
+                    b.Navigation("CachedVotes");
+
                     b.Navigation("ChannelPolls");
 
-                    b.Navigation("Options");
+                    b.Navigation("LiveVotes");
 
-                    b.Navigation("Votes");
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("Web.Models.User", b =>

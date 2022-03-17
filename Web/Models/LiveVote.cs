@@ -1,6 +1,6 @@
 namespace Web.Models;
 
-public class Vote
+public class LiveVote
 {
     public int Id { get; set; }
     public string UserIdentifier { get; set; } = String.Empty;

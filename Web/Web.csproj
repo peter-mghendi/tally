@@ -8,6 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="linqtotwitter" Version="6.14.0" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.2" />
@@ -17,5 +21,5 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2" />
         <PackageReference Include="Telegram.Bot" Version="17.0.0" />
     </ItemGroup>
-
+    
 </Project>

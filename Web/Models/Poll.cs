@@ -12,7 +12,8 @@ public partial class Poll
     public User Creator { get; set; } = null!;
     public ICollection<ChannelPoll> ChannelPolls { get; set; } = new List<ChannelPoll>();
     public IList<Option> Options { get; set; } = new List<Option>();
-    public ICollection<Vote> Votes { get; set; } = new List<Vote>();
+    public ICollection<LiveVote> LiveVotes { get; set; } = new List<LiveVote>();
+    public ICollection<CachedVote> CachedVotes { get; set; } = new List<CachedVote>();
 
     public PollStatus Status => StartedAt > DateTime.UtcNow ? PollStatus.Scheduled
         : EndedAt < DateTime.UtcNow ? PollStatus.Concluded

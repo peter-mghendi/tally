@@ -9,5 +9,5 @@ public interface IChannel
     Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options,
         CancellationToken cancellationToken = default);
 
-    Task<List<PollResult>> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
+    Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
 }
