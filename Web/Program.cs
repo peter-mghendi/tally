@@ -2,6 +2,8 @@ using LinqToTwitter;
 using LinqToTwitter.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
+using Tweetinvi;
+using Tweetinvi.Models;
 using Web.Channels;
 using Web.Data;
 using Web.Models.Configuration;
@@ -22,6 +24,7 @@ builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddScoped<TelegramUpdateService>();
 
 // Twitter
+// LinqToTwitter - Publisher
 builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
 {
     CredentialStore = new SingleUserInMemoryCredentialStore
@@ -32,6 +35,15 @@ builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
         AccessTokenSecret = twitterBotConfig.AccessTokenSecret
     }
 }));
+
+// CoreTweet - Consumer
+builder.Services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
+    twitterBotConfig.ConsumerKey,
+    twitterBotConfig.ConsumerSecret,
+    twitterBotConfig.AccessToken,
+    twitterBotConfig.AccessTokenSecret
+)));
+
 builder.Services.AddHostedService<TwitterUpdateService>();
 
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));

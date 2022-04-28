@@ -1,6 +1,9 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Tweetinvi;
 using Web.Data;
 using Web.Models;
+using static System.Text.Json.JsonSerializer;
 
 namespace Web.Services;
 
@@ -29,26 +32,28 @@ public class TwitterUpdateService : IHostedService, IDisposable
         
         using var scope = _serviceScopeFactory.CreateScope();
         var tallyContext = scope.ServiceProvider.GetRequiredService<TallyContext>();
-
-        var pollsWithTwitter = from channelPoll in tallyContext.ChannelPolls where channelPoll.Channel == PollChannel.Twitter
-                select channelPoll.Poll.Id;
+        var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();
         
-        _logger.LogInformation("Found {Count} polls with twitter channels.", pollsWithTwitter.Count());
+        var channelPolls = await tallyContext.ChannelPolls
+            .Include(cp => cp.Poll)
+            .ThenInclude(p => p.Options)
+            .Where(p => p.Channel == PollChannel.Twitter)
+            .ToListAsync();
 
-        foreach (var id in pollsWithTwitter)
+        _logger.LogInformation("Found {Count} polls with twitter channels.", channelPolls.Count);
+
+        foreach (var channelPoll in channelPolls)
         {
-            var poll = await tallyContext.Polls.Include(p => p.Options).SingleAsync(p => p.Id == id);
-            var options = poll.Options;
+            var poll = channelPoll.Poll;
+            var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.Identifier);
+            var tweetPollOptions = tweet.Includes.Polls[0].PollOptions;
 
-            var voteCounts = options.Select(option => new CachedVote
+            var voteCounts = poll.Options.Select((t, i) => new CachedVote
             {
-                Count = random.Next(20, 50),
-                Channel = PollChannel.Twitter,
-                Option = option,
-                Poll = poll,
+                Count = tweetPollOptions[i].Votes, Channel = PollChannel.Twitter, Option = t, Poll = poll,
             });
 
-            var currentCache = tallyContext.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == id);
+            var currentCache = tallyContext.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
             tallyContext.CachedVotes.RemoveRange(currentCache);
         
             await tallyContext.CachedVotes.AddRangeAsync(voteCounts);

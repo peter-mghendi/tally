@@ -70,6 +70,8 @@ public class TelegramUpdateService
             .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram);
         var poll = channelPoll.Poll;
         var userIdentifier = pollAnswer.User.Id.ToString();
+        
+        _logger.LogInformation("Received telegram vote for poll: {poll}", poll.Id);
 
         if (pollAnswer.OptionIds.Length <= 0)
         {
