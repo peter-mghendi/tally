@@ -5,7 +5,7 @@ public partial class Poll
     public enum PollStatus
     {
         Scheduled,
-        Happening,
+        Ongoing,
         Concluded
     }
 }

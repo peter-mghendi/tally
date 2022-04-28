@@ -1,9 +1,7 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Tweetinvi;
 using Web.Data;
 using Web.Models;
-using static System.Text.Json.JsonSerializer;
 
 namespace Web.Services;
 
@@ -28,8 +26,6 @@ public class TwitterUpdateService : IHostedService, IDisposable
     
     private async void DoWork(object? state)
     {
-        var random = new Random();
-        
         using var scope = _serviceScopeFactory.CreateScope();
         var tallyContext = scope.ServiceProvider.GetRequiredService<TallyContext>();
         var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();

@@ -1,14 +1,39 @@
 @page "{id:int}"
 @using System.Collections.Immutable
+@using Web.Models
 @model Web.Pages.Polls.Details
 
 @{
     ViewData["Title"] = "Poll Details";
 
+    #region Channels
+    
     var channelTotals = Model.Results
         .Select(pair => (Channel: pair.Key, Votes: pair.Value.Results.Sum(r => r.Votes)))
         .OrderByDescending(tuple => tuple.Votes)
         .ToImmutableArray();
+    
+    string topChannelString;
+    string topChannelSuffix;
+
+    var firstChannel = channelTotals[0];
+    if (firstChannel.Votes != channelTotals[1].Votes)
+    {
+        topChannelString = firstChannel.Channel;
+        topChannelSuffix = "was the most active channel.";
+    }
+    else
+    {
+        var topChannels = channelTotals
+            .Where(c => c.Votes == channelTotals[0].Votes)
+            .Select(c => c.Channel).ToList();
+        topChannelString = $"{string.Join(", ", topChannels.Take(0..^1))} and {topChannels.ElementAt(^1)}";
+        topChannelSuffix = "were the most active channels.";
+    }
+    
+    #endregion
+
+    #region Options
 
     var optionTotalsDict = new Dictionary<int, int>();
     foreach (var (optionId, votes) in Model.Results.SelectMany(channel => channel.Value.Results))
@@ -28,6 +53,26 @@
         .ToImmutableArray();
 
     var totalVotes = channelTotals.Sum(ct => ct.Votes);
+
+    string topOptionString;
+    string topOptionSuffix;
+
+    var firstOption = orderedOptionTotals[0];
+    if (firstOption.Votes != orderedOptionTotals[1].Votes)
+    {
+        topOptionString = firstOption.Option;
+        topOptionSuffix = "was the most popular option.";
+    }
+    else
+    {
+        var topOptions = orderedOptionTotals
+            .Where(t => t.Votes == @orderedOptionTotals[0].Votes)
+            .Select(t => t.Option).ToList();
+        topOptionString = $"{string.Join(", ", topOptions.Take(0..^1))} and {topOptions.ElementAt(^1)}";
+        topOptionSuffix = "were the most popular options.";
+    }
+    
+    #endregion
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -43,41 +88,29 @@
 <div class="d-flex justify-content-around mb-5">
     <div class="d-flex flex-column align-items-center py-4">
         <p class="display-3 text-info">@totalVotes</p>
-        <p class="display-6">Votes</p>
+        <p class="display-6">@(totalVotes == 1 ? "Vote" : "Votes")</p>
     </div>
     <div class="vr"></div>
     <div class="d-flex flex-column align-items-center py-4">
         <h2 class="display-3 text-info">@Model.Poll.ChannelPolls.Count</h2>
-        <p class="display-6">Channels</p>
+        <p class="display-6">@(Model.Poll.ChannelPolls.Count == 1 ? "Channel" : "Channels")</p>
     </div>
 </div>
 
 <div class="row mb-5">
-    <p class="display-6">Details</p>
     <div class="col-12 col-md-6">
+        <p class="display-6 text-muted mb-3">Overview</p>
         <partial name="Shared/_PollData" model="Model.Poll"/>
     </div>
     <div class="col-12 col-md-6">
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="platform-telegram" checked disabled/>
-            <label for="platform-telegram">Telegram</label>
-        </div>
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="platform-twitter" checked disabled/>
-            <label for="platform-twitter">Twitter</label>
-        </div>
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="platform-discord" disabled/>
-            <label for="platform-discord">Discord</label>
-        </div>
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="platform-github" disabled/>
-            <label for="platform-github">GitHub</label>
-        </div>
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="platform-web" disabled/>
-            <label for="platform-web">Web</label>
-        </div>
+        <p class="display-6 text-muted mb-3">Channels</p>
+        @foreach (var channel in Enum.GetValues<PollChannel>())
+        {
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="platform-telegram" checked="@(Model.Poll.ChannelPolls.Any(cp => cp.Channel == channel) ? "checked" : null)" disabled/>
+                <label for="platform-telegram">@channel.ToString()</label>
+            </div>
+        }
     </div>
 </div>
 
@@ -131,16 +164,16 @@
         <div class="col-12 col-md-6">
             <canvas id="optionsChart" width="400" height="400"></canvas>
         </div>
-        <div class="col-12 col-md-6 d-flex align-items-center">
-            <p class="display-6"><span class="text-info">@orderedOptionTotals[0].Option</span> was the most popular option.</p>
+        <div class="col-12 col-md-6 d-flex align-items-center py-5">
+            <p class="display-6 mx-auto text-center"><span class="text-info">@topOptionString</span> @topOptionSuffix</p>
         </div>
     </div>
     <div class="row mb-5">
-        <div class="col-12 col-md-6 d-flex align-items-center">
-            <p class="display-6"><span class="text-info">@channelTotals[0].Channel</span> was the most active channel.</p>
-        </div>
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-6 order-md-2">
             <canvas id="channelsChart" width="400" height="400"></canvas>
+        </div>
+        <div class="col-12 col-md-6 d-flex align-items-center py-5 order-md-1">
+            <p class="display-6 mx-auto text-center"><span class="text-info">@topChannelString</span> @topChannelSuffix</p>
         </div>
     </div>
 </div>
@@ -155,7 +188,7 @@
         data: {
             labels: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Option))),
             datasets: [{
-                label: '# of LiveVotes per Option',
+                label: '# of votes per option',
                 data: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Votes))),
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
@@ -175,7 +208,10 @@
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1    
+                    }
                 }
             }
         }
@@ -186,7 +222,7 @@
          data: {
              labels: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Channel))),
              datasets: [{
-               label: '# of LiveVotes per Channel',
+               label: '# of votes per channel',
                data: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Votes))),
                backgroundColor: [
                  'rgb(255, 99, 132)',

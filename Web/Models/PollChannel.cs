@@ -4,6 +4,7 @@ public enum PollChannel
 {
     Telegram,
     Twitter,
-    // Discord,
-    // GitHub
+    GitHub,
+    Discord,
+    Web,
 }
