@@ -4,7 +4,7 @@ using Web.Services;
 
 namespace Web.Controllers;
 
-public class WebhookController : ControllerBase
+public class TelegramWebhookController : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Post([FromServices] TelegramUpdateService telegramUpdateService,

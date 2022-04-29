@@ -17,6 +17,8 @@ public class Delete : PageModel
     {
         _logger = logger;
         _context = context;
+
+        Poll = new Poll();
     }
     
     [BindProperty(SupportsGet = true)] 

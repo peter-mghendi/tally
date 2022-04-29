@@ -14,9 +14,7 @@ public class Create : PageModel
 {
     private readonly ILogger<Create> _logger;
     private readonly TallyContext _context;
-    private readonly IChannel _telegramChannel;
-    private readonly IChannel _twitterChannel;
-    private readonly IChannel _githubChannel;
+    private readonly List<IChannel> _channels;
     private readonly UserManager<User> _userManager;
 
     [BindProperty] 
@@ -31,12 +29,10 @@ public class Create : PageModel
     {
         _logger = logger;
         _context = context;
-        _telegramChannel = channels.Telegram;
-        _twitterChannel = channels.Twitter;
-        _githubChannel = channels.GitHub;
+        _channels = new List<IChannel>() {channels.Telegram, channels.Twitter, channels.GitHub};
         _userManager = userManager;
         
-        Poll = new();
+        Poll = new Poll();
     }
 
     public IActionResult OnGet()
@@ -51,14 +47,30 @@ public class Create : PageModel
         Poll.Creator = await _userManager.GetUserAsync(User);
         Poll.ChannelPolls = new List<ChannelPoll>
         {
-            await _telegramChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _twitterChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _githubChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
+            await _channels[0].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
+            await _channels[1].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
+            await _channels[2].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
         };
 
         await _context.Polls.AddAsync(Poll);
         await _context.SaveChangesAsync();
 
+        var cachedPollChannels = new List<PollChannel>() {PollChannel.Twitter};
+        var cachedChannelPolls = Poll.ChannelPolls.Where(cp => cachedPollChannels.Contains(cp.Channel));
+
+        var cachedVotes = new List<CachedVote>();
+        foreach (var channelPoll in cachedChannelPolls)
+        {
+            var voteCounts = Poll.Options.Select((t, i) => new CachedVote
+            {
+                Count = 0, Channel = channelPoll.Channel, Option = t, Poll = Poll,
+            });
+            cachedVotes.AddRange(voteCounts);
+        }
+        
+        await _context.CachedVotes.AddRangeAsync(cachedVotes);
+        await _context.SaveChangesAsync();
+        
         return RedirectToPage("./Index");
     }
 }

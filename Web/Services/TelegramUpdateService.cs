@@ -9,7 +9,7 @@ using Poll = Telegram.Bot.Types.Poll;
 
 namespace Web.Services;
 
-public class TelegramUpdateService
+public sealed class TelegramUpdateService
 {
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<TelegramUpdateService> _logger;
@@ -44,13 +44,13 @@ public class TelegramUpdateService
 
     private async Task BotOnMessageReceived(Message message)
     {
-        _logger.LogInformation("Receive message type: {messageType}", message.Type);
+        _logger.LogInformation("Received message type: {messageType}", message.Type);
         if (message.Type != MessageType.Text)
             return;
 
         var chat = message.Chat;
-        var reply = await _botClient.SendTextMessageAsync(chat.Id, $"Hi, {chat.Username} you cannot interact with this bot directly.");
-        _logger.LogInformation("The message was sent with id: {sentMessageId}", reply.MessageId);
+        var reply = $"Hi, {chat.Username} you cannot interact with this bot directly. Visit the repo on GitHub for more info,";
+        _ = await _botClient.SendTextMessageAsync(chat.Id, reply);
     }
     
     private Task BotOnPollRequested(Poll poll)

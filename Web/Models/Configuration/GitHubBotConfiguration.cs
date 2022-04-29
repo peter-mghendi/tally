@@ -2,7 +2,7 @@ namespace Web.Models.Configuration;
 
 public class GitHubBotConfiguration
 {
-    public string CategoryId { get; init; }
-    public string Token { get; init; }
-    public string RepositoryId { get; init; }
+    public string CategoryId { get; init; } = null!;
+    public string Token { get; init; } = null!;
+    public string RepositoryId { get; init; } = null!;
 }

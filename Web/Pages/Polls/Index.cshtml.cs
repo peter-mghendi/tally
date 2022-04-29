@@ -21,6 +21,8 @@ public class Index : PageModel
     {
         _context = context;
         _userManager = userManager;
+
+        Polls = new List<Poll>();
     }
 
     public async Task OnGetAsync()

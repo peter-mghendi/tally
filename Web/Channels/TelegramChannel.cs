@@ -16,7 +16,7 @@ public class TelegramChannel : Channel
     public TelegramChannel(ITelegramBotClient botClient, IConfiguration configuration, TallyContext tallyContext)
     {
         _botClient = botClient;
-        _chatId = configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>().ChatId;
+        _chatId = configuration.GetRequiredSection(nameof(TelegramBotConfiguration)).Get<TelegramBotConfiguration>().ChatId;
         _tallyContext = tallyContext;
     }
 

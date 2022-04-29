@@ -5,7 +5,7 @@ using Web.Models;
 
 namespace Web.Services;
 
-public class TwitterUpdateService : IHostedService, IDisposable
+public sealed class TwitterUpdateService : IHostedService, IDisposable
 {
     private readonly ILogger<TwitterUpdateService> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;

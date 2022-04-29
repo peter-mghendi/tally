@@ -1,10 +1,4 @@
-using LinqToTwitter;
-using LinqToTwitter.OAuth;
 using Microsoft.EntityFrameworkCore;
-using Octokit.GraphQL;
-using Telegram.Bot;
-using Tweetinvi;
-using Tweetinvi.Models;
 using Web.Channels;
 using Web.Data;
 using Web.Models.Configuration;
@@ -15,55 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var telegramBotConfig = builder.Configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>();
-var twitterBotConfig = builder.Configuration.GetSection("TwitterBotConfiguration").Get<TwitterBotConfiguration>();
-var gitHubBotConfig = builder.Configuration.GetSection("GitHubBotConfiguration").Get<GitHubBotConfiguration>();
-
-// Telegram
-builder.Services.AddHttpClient("tgwebhook")
-    .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(telegramBotConfig.BotToken, client));
-builder.Services.AddHostedService<ConfigureWebhook>();
-builder.Services.AddScoped<TelegramUpdateService>();
-
-// Twitter
-// LinqToTwitter - Publisher
-builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
-{
-    CredentialStore = new SingleUserInMemoryCredentialStore
-    {
-        ConsumerKey = twitterBotConfig.ConsumerKey,
-        ConsumerSecret = twitterBotConfig.ConsumerSecret,
-        AccessToken = twitterBotConfig.AccessToken,
-        AccessTokenSecret = twitterBotConfig.AccessTokenSecret
-    }
-}));
-
-// Tweetinvi - Consumer
-builder.Services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
-    twitterBotConfig.ConsumerKey,
-    twitterBotConfig.ConsumerSecret,
-    twitterBotConfig.AccessToken,
-    twitterBotConfig.AccessTokenSecret
-)));
-
-builder.Services.AddHostedService<TwitterUpdateService>();
-
-// GitHub
-builder.Services.AddScoped(_ => new Connection(new("Tally", "1.0"), gitHubBotConfig.Token));
+var telegramBotConfig = builder.Configuration.GetSection(nameof(TelegramBotConfiguration)).Get<TelegramBotConfiguration>();
+var twitterBotConfig = builder.Configuration.GetSection(nameof(TwitterBotConfiguration)).Get<TwitterBotConfiguration>();
+var gitHubBotConfig = builder.Configuration.GetSection(nameof(GitHubBotConfiguration)).Get<GitHubBotConfiguration>();
 
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-// Identity and Routing
+ 
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<TallyContext>();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
-
-// Register channels and wrappers
-builder.Services.AddScoped<TelegramChannel>();
-builder.Services.AddScoped<TwitterChannel>();
-builder.Services.AddScoped<GitHubChannel>();
+ 
+builder.Services.AddTelegram(telegramBotConfig);
+builder.Services.AddTwitter(twitterBotConfig);
+builder.Services.AddGitHub(gitHubBotConfig);
 builder.Services.AddScoped<ChannelWrapper>();
 
 var app = builder.Build();
@@ -92,11 +52,13 @@ app.UseEndpoints(endpoints =>
 {
     // Configure custom endpoint per Telegram API recommendations:
     // REF: https://core.telegram.org/bots/api#setwebhook
-    var defaults = new {controller = "Webhook", action = "Post"};
-    endpoints.MapControllerRoute(name: "tgwebhook", pattern: $"bot/{telegramBotConfig.BotToken}", defaults: defaults);
+    endpoints.MapControllerRoute(
+        name: "webhooks.telegram", 
+        pattern: $"webhooks/telegram/{telegramBotConfig.BotToken}", 
+        defaults: new { controller = "TelegramWebhook", action = "Post" }
+        );
     endpoints.MapControllers();
 });
 app.MapRazorPages();
-
 
 app.Run();

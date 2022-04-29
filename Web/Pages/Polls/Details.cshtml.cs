@@ -1,6 +1,4 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +11,10 @@ namespace Web.Pages.Polls;
 [Authorize]
 public class Details : PageModel
 {
-    private readonly ILogger<Create> _logger;
     private readonly TallyContext _context;
     private readonly IChannel _telegramChannel;
     private readonly IChannel _twitterChannel;
-    private readonly UserManager<User> _userManager;
+    private readonly IChannel _githubChannel;
 
     [BindProperty(SupportsGet = true)] 
     public int Id { get; set; }
@@ -28,20 +25,15 @@ public class Details : PageModel
     [BindProperty] 
     public Dictionary<string, ChannelResult> Results { get; set; }
 
-    public Details(
-        ILogger<Create> logger,
-        TallyContext context,
-        ChannelWrapper channels,
-        UserManager<User> userManager
-    )
+    public Details(TallyContext context, ChannelWrapper channels)
     {
-        _logger = logger;
         _context = context;
         _telegramChannel = channels.Telegram;
         _twitterChannel = channels.Twitter;
-        _userManager = userManager;
+        _githubChannel = channels.GitHub;
 
-        Poll = new();
+        Poll = new Poll();
+        Results = new Dictionary<string, ChannelResult>();
     }
 
     public async Task OnGetAsync()
@@ -53,13 +45,13 @@ public class Details : PageModel
 
         var telegramPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Telegram);
         var twitterPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Twitter);
+        var githubPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Twitter);
 
         Results = new Dictionary<string, ChannelResult>
         {
             [nameof(PollChannel.Telegram)] = await _telegramChannel.CountVotesAsync(telegramPoll),
             [nameof(PollChannel.Twitter)] = await _twitterChannel.CountVotesAsync(twitterPoll),
+            [nameof(PollChannel.GitHub)] = await _githubChannel.CountVotesAsync(githubPoll),
         };
-
-        _logger.LogInformation(JsonSerializer.Serialize(Results, new JsonSerializerOptions {WriteIndented = true}));
     }
 }

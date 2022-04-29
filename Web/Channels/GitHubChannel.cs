@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using Web.Data;
@@ -16,9 +17,12 @@ public class GitHubChannel : Channel
     
     public GitHubChannel(Connection connection, IConfiguration configuration, TallyContext tallyContext)
     {
+        var gitHubBotConfiguration = configuration.GetRequiredSection(nameof(GitHubBotConfiguration))
+                .Get<GitHubBotConfiguration>();
+        
         _connection = connection;
-        _categoryId = configuration.GetSection("GitHubBotConfiguration").Get<GitHubBotConfiguration>().CategoryId;
-        _repositoryId = configuration.GetSection("GitHubBotConfiguration").Get<GitHubBotConfiguration>().RepositoryId;
+        _categoryId = gitHubBotConfiguration.CategoryId;
+        _repositoryId = gitHubBotConfiguration.RepositoryId;
         _tallyContext = tallyContext;
     }
     
@@ -48,8 +52,10 @@ public class GitHubChannel : Channel
         return BuildPoll(result.Number.ToString());
     }
 
-    public override Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var query = from option in _tallyContext.Options where option.Poll.Id == channelPoll.Poll.Id
+            select new PollResult(option.Id, option.LiveVotes.Count(lv => lv.Channel == PollChannel.GitHub));
+        return LiveResult(await query.ToListAsync(cancellationToken));
     }
 }

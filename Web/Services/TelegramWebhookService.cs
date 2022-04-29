@@ -4,19 +4,19 @@ using Web.Models.Configuration;
 
 namespace Web.Services;
 
-public class ConfigureWebhook : IHostedService
+public sealed class TelegramWebhookService : IHostedService
 {
-    private readonly ILogger<ConfigureWebhook> _logger;
+    private readonly ILogger<TelegramWebhookService> _logger;
     private readonly IServiceProvider _services;
     private readonly TelegramBotConfiguration _telegramBotConfig;
 
-    public ConfigureWebhook(ILogger<ConfigureWebhook> logger,
+    public TelegramWebhookService(ILogger<TelegramWebhookService> logger,
                             IServiceProvider serviceProvider,
                             IConfiguration configuration)
     {
         _logger = logger;
         _services = serviceProvider;
-        _telegramBotConfig = configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>();
+        _telegramBotConfig = configuration.GetRequiredSection(nameof(TelegramBotConfiguration)).Get<TelegramBotConfiguration>();
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -26,8 +26,8 @@ public class ConfigureWebhook : IHostedService
 
         // Configure custom endpoint per Telegram API recommendations:
         // REF: https://core.telegram.org/bots/api#setwebhook
-        var webhookAddress = @$"{_telegramBotConfig.HostAddress}/bot/{_telegramBotConfig.BotToken}";
-        _logger.LogInformation("Setting webhook: {webhookAddress}", webhookAddress);
+        var webhookAddress = @$"{_telegramBotConfig.HostAddress}/webhooks/telegram/{_telegramBotConfig.BotToken}";
+        _logger.LogInformation("Setting Telegram webhook: {webhookAddress}", webhookAddress);
         await botClient.SetWebhookAsync(webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
             cancellationToken: cancellationToken);
@@ -39,7 +39,7 @@ public class ConfigureWebhook : IHostedService
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         // Remove webhook upon app shutdown
-        _logger.LogInformation("Removing webhook");
+        _logger.LogInformation("Removing Telegram webhook");
         await botClient.DeleteWebhookAsync(cancellationToken: cancellationToken);
     }
 }
