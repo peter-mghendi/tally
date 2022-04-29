@@ -1,6 +1,7 @@
 using LinqToTwitter;
 using LinqToTwitter.OAuth;
 using Microsoft.EntityFrameworkCore;
+using Octokit.GraphQL;
 using Telegram.Bot;
 using Tweetinvi;
 using Tweetinvi.Models;
@@ -16,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var telegramBotConfig = builder.Configuration.GetSection("TelegramBotConfiguration").Get<TelegramBotConfiguration>();
 var twitterBotConfig = builder.Configuration.GetSection("TwitterBotConfiguration").Get<TwitterBotConfiguration>();
+var gitHubBotConfig = builder.Configuration.GetSection("GitHubBotConfiguration").Get<GitHubBotConfiguration>();
 
 // Telegram
 builder.Services.AddHttpClient("tgwebhook")
@@ -36,7 +38,7 @@ builder.Services.AddScoped(_ => new TwitterContext(new SingleUserAuthorizer
     }
 }));
 
-// CoreTweet - Consumer
+// Tweetinvi - Consumer
 builder.Services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
     twitterBotConfig.ConsumerKey,
     twitterBotConfig.ConsumerSecret,
@@ -46,16 +48,22 @@ builder.Services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
 
 builder.Services.AddHostedService<TwitterUpdateService>();
 
+// GitHub
+builder.Services.AddScoped(_ => new Connection(new("Tally", "1.0"), gitHubBotConfig.Token));
+
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// Identity and Routing
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<TallyContext>();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
 
+// Register channels and wrappers
 builder.Services.AddScoped<TelegramChannel>();
 builder.Services.AddScoped<TwitterChannel>();
+builder.Services.AddScoped<GitHubChannel>();
 builder.Services.AddScoped<ChannelWrapper>();
 
 var app = builder.Build();
@@ -89,5 +97,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 app.MapRazorPages();
+
 
 app.Run();

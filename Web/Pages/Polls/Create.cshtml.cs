@@ -1,4 +1,3 @@
-using LinqToTwitter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,6 +16,7 @@ public class Create : PageModel
     private readonly TallyContext _context;
     private readonly IChannel _telegramChannel;
     private readonly IChannel _twitterChannel;
+    private readonly IChannel _githubChannel;
     private readonly UserManager<User> _userManager;
 
     [BindProperty] 
@@ -33,6 +33,7 @@ public class Create : PageModel
         _context = context;
         _telegramChannel = channels.Telegram;
         _twitterChannel = channels.Twitter;
+        _githubChannel = channels.GitHub;
         _userManager = userManager;
         
         Poll = new();
@@ -51,7 +52,8 @@ public class Create : PageModel
         Poll.ChannelPolls = new List<ChannelPoll>
         {
             await _telegramChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _twitterChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
+            await _twitterChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
+            await _githubChannel.CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
         };
 
         await _context.Polls.AddAsync(Poll);
