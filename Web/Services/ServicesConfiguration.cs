@@ -1,11 +1,13 @@
 using LinqToTwitter;
 using LinqToTwitter.OAuth;
-using Octokit.GraphQL;
+using Octokit;
+using Octokit.Webhooks;
 using Telegram.Bot;
 using Tweetinvi;
 using Tweetinvi.Models;
 using Web.Channels;
 using Web.Models.Configuration;
+using Connection = Octokit.GraphQL.Connection;
 
 namespace Web.Services;
 
@@ -48,7 +50,16 @@ public static class ServicesConfiguration
     
     public static void AddGitHub(this IServiceCollection services, GitHubBotConfiguration gitHubBotConfig)
     {
-        services.AddScoped(_ => new Connection(new ProductHeaderValue("Tally", "1.0"), gitHubBotConfig.Token));
+        // GraphQL
+        services.AddScoped(_ => new Connection(new("Tally", "1.0"), gitHubBotConfig.Token));
+        
+        // REST
+        services.AddScoped(_ => new GitHubClient(new ProductHeaderValue("Tally", "1.0"))
+        {
+            Credentials = new Credentials(gitHubBotConfig.Token)
+        });
+        services.AddSingleton<WebhookEventProcessor, GitHubWebHookEventProcessor>();
+        services.AddHostedService<GitHubWebhookService>();
         services.AddScoped<GitHubChannel>();
     }
 }

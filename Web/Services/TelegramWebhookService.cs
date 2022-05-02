@@ -8,6 +8,7 @@ public sealed class TelegramWebhookService : IHostedService
 {
     private readonly ILogger<TelegramWebhookService> _logger;
     private readonly IServiceProvider _services;
+    private readonly BaseConfiguration _baseConfig;
     private readonly TelegramBotConfiguration _telegramBotConfig;
 
     public TelegramWebhookService(ILogger<TelegramWebhookService> logger,
@@ -16,6 +17,7 @@ public sealed class TelegramWebhookService : IHostedService
     {
         _logger = logger;
         _services = serviceProvider;
+        _baseConfig = configuration.GetRequiredSection(nameof(BaseConfiguration)).Get<BaseConfiguration>();
         _telegramBotConfig = configuration.GetRequiredSection(nameof(TelegramBotConfiguration)).Get<TelegramBotConfiguration>();
     }
 
@@ -26,7 +28,7 @@ public sealed class TelegramWebhookService : IHostedService
 
         // Configure custom endpoint per Telegram API recommendations:
         // REF: https://core.telegram.org/bots/api#setwebhook
-        var webhookAddress = @$"{_telegramBotConfig.HostAddress}/webhooks/telegram/{_telegramBotConfig.BotToken}";
+        var webhookAddress = @$"{_baseConfig.HostAddress}/webhooks/telegram/{_telegramBotConfig.BotToken}";
         _logger.LogInformation("Setting Telegram webhook: {webhookAddress}", webhookAddress);
         await botClient.SetWebhookAsync(webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),

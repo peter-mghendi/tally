@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Octokit.Webhooks.AspNetCore;
 using Web.Channels;
 using Web.Data;
 using Web.Models.Configuration;
@@ -57,6 +58,7 @@ app.UseEndpoints(endpoints =>
         pattern: $"webhooks/telegram/{telegramBotConfig.BotToken}", 
         defaults: new { controller = "TelegramWebhook", action = "Post" }
         );
+    endpoints.MapGitHubWebhooks("/webhooks/github", gitHubBotConfig.WebHookSecret);
     endpoints.MapControllers();
 });
 app.MapRazorPages();
