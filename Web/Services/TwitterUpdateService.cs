@@ -26,36 +26,44 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
     
     private async void DoWork(object? state)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var tallyContext = scope.ServiceProvider.GetRequiredService<TallyContext>();
-        var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();
-        
-        var channelPolls = await tallyContext.ChannelPolls
-            .Include(cp => cp.Poll)
-            .ThenInclude(p => p.Options)
-            .Where(p => p.Channel == PollChannel.Twitter)
-            .ToListAsync();
-
-        _logger.LogInformation("Found {Count} polls with twitter channels.", channelPolls.Count);
-
-        foreach (var channelPoll in channelPolls)
+        try
         {
-            var poll = channelPoll.Poll;
-            var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.Identifier);
-            var tweetPollOptions = tweet.Includes.Polls[0].PollOptions;
+            using var scope = _serviceScopeFactory.CreateScope();
+            await using var tallyContext = scope.ServiceProvider.GetRequiredService<TallyContext>();
+            var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();
 
-            var voteCounts = poll.Options.Select((t, i) => new CachedVote
+            var channelPolls = await tallyContext.ChannelPolls
+                .Include(cp => cp.Poll)
+                .ThenInclude(p => p.Options)
+                .Where(p => p.Channel == PollChannel.Twitter)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {Count} polls with twitter channels.", channelPolls.Count);
+
+            foreach (var channelPoll in channelPolls)
             {
-                Count = tweetPollOptions[i].Votes, Channel = PollChannel.Twitter, Option = t, Poll = poll,
-            });
+                var poll = channelPoll.Poll;
+                var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.Identifier);
+                var tweetPollOptions = tweet.Includes.Polls[0].PollOptions;
 
-            var currentCache = tallyContext.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
-            tallyContext.CachedVotes.RemoveRange(currentCache);
-        
-            await tallyContext.CachedVotes.AddRangeAsync(voteCounts);
+                var voteCounts = poll.Options.Select((t, i) => new CachedVote
+                {
+                    Count = tweetPollOptions[i].Votes, Channel = PollChannel.Twitter, Option = t, Poll = poll,
+                });
+
+                var currentCache =
+                    tallyContext.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
+                tallyContext.CachedVotes.RemoveRange(currentCache);
+
+                await tallyContext.CachedVotes.AddRangeAsync(voteCounts);
+            }
+
+            await tallyContext.SaveChangesAsync();
         }
-       
-        await tallyContext.SaveChangesAsync();
+        catch (Exception)
+        {
+            _logger.LogInformation("Twitter update failed at {DateTime}.", DateTime.Now);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
