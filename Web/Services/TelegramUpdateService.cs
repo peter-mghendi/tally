@@ -22,15 +22,15 @@ public sealed class TelegramUpdateService
         _context = context;
     }
 
-    public async Task HandleAsync(Update update)
+    public async Task HandleAsync(Update update, CancellationToken cancellationToken = default)
     {
         var handler = update.Type switch
         {
             UpdateType.Poll => BotOnPollRequested(update.Poll!),
-            UpdateType.PollAnswer => BotOnPollAnswered(update.PollAnswer!),
-            UpdateType.Message => BotOnMessageReceived(update.Message!),
-            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!),
-            _ => Task.Run(() => _logger.LogInformation("Unsupported update type received."))
+            UpdateType.PollAnswer => BotOnPollAnswered(update.PollAnswer!, cancellationToken),
+            UpdateType.Message => BotOnMessageReceived(update.Message!, cancellationToken),
+            UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!, cancellationToken),
+            _ => Task.Run(() => _logger.LogInformation("Unsupported update type received."), cancellationToken)
         };
         try
         {
@@ -38,11 +38,11 @@ public sealed class TelegramUpdateService
         }
         catch (Exception exception)
         {
-            await HandleErrorAsync(exception);
+           HandleError(exception);
         }
     }
 
-    private async Task BotOnMessageReceived(Message message)
+    private async Task BotOnMessageReceived(Message message, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Received message type: {messageType}", message.Type);
         if (message.Type != MessageType.Text)
@@ -50,7 +50,7 @@ public sealed class TelegramUpdateService
 
         var chat = message.Chat;
         var reply = $"Hi, {chat.Username} you cannot interact with this bot directly. Visit the repo on GitHub for more info,";
-        _ = await _botClient.SendTextMessageAsync(chat.Id, reply);
+        _ = await _botClient.SendTextMessageAsync(chat.Id, reply, cancellationToken: cancellationToken);
     }
     
     private Task BotOnPollRequested(Poll poll)
@@ -60,18 +60,18 @@ public sealed class TelegramUpdateService
         return Task.CompletedTask;
     }
     
-    private async Task BotOnPollAnswered(PollAnswer pollAnswer)
+    private async Task BotOnPollAnswered(PollAnswer pollAnswer, CancellationToken cancellationToken = default)
     {
         var channelPoll = await _context.ChannelPolls
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.Options)
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.LiveVotes)
-            .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram);
+            .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram, cancellationToken);
         var poll = channelPoll.Poll;
         var userIdentifier = pollAnswer.User.Id.ToString();
         
-        _logger.LogInformation("Received telegram vote for poll: {poll}", poll.Id);
+        _logger.LogInformation("Received Telegram vote for poll: {poll}", poll.Id);
 
         if (pollAnswer.OptionIds.Length <= 0)
         {
@@ -88,10 +88,10 @@ public sealed class TelegramUpdateService
             });
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private Task HandleErrorAsync(Exception exception)
+    private void HandleError(Exception exception)
     {
         var errorMessage = exception switch
         {
@@ -101,6 +101,5 @@ public sealed class TelegramUpdateService
         };
 
         _logger.LogInformation("HandleError: {ErrorMessage}", errorMessage);
-        return Task.CompletedTask;
     }
 }

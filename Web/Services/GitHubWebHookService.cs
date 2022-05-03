@@ -3,7 +3,7 @@ using Web.Models.Configuration;
 
 namespace Web.Services;
 
-public sealed class GitHubWebhookService : IHostedService
+public sealed class GitHubWebHookService : IHostedService
 {
     private readonly ILogger<TelegramWebhookService> _logger;
     private readonly IServiceProvider _services;
@@ -12,7 +12,7 @@ public sealed class GitHubWebhookService : IHostedService
 
     private RepositoryHook? _hook;
 
-    public GitHubWebhookService(ILogger<TelegramWebhookService> logger,
+    public GitHubWebHookService(ILogger<TelegramWebhookService> logger,
         IServiceProvider serviceProvider,
         IConfiguration configuration)
     {

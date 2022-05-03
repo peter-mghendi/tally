@@ -58,8 +58,8 @@ public static class ServicesConfiguration
         {
             Credentials = new Credentials(gitHubBotConfig.Token)
         });
-        services.AddSingleton<WebhookEventProcessor, GitHubWebHookEventProcessor>();
-        services.AddHostedService<GitHubWebhookService>();
+        services.AddSingleton<WebhookEventProcessor, GitHubUpdateService>();
+        services.AddHostedService<GitHubWebHookService>();
         services.AddScoped<GitHubChannel>();
     }
 }
