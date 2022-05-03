@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot.Types;
+using WatchDog;
+using WatchDog.src.Enums;
 using Web.Channels;
 using Web.Data;
 using Web.Models.Configuration;
@@ -15,6 +17,8 @@ var telegramBotConfig = builder.Configuration.GetSection(nameof(TelegramBotConfi
 var twitterBotConfig = builder.Configuration.GetSection(nameof(TwitterBotConfiguration)).Get<TwitterBotConfiguration>();
 var gitHubBotConfig = builder.Configuration.GetSection(nameof(GitHubBotConfiguration)).Get<GitHubBotConfiguration>();
 
+var watchdogConfig = builder.Configuration.GetSection(nameof(WatchDogConfiguration)).Get<WatchDogConfiguration>();
+
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
  
@@ -22,6 +26,12 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
     .AddEntityFrameworkStores<TallyContext>();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
+
+builder.Services.AddWatchDogServices(opt =>
+{
+    opt.IsAutoClear = true;
+    opt.ClearTimeSchedule = WatchDogAutoClearScheduleEnum.Monthly;
+});
  
 builder.Services.AddTelegram(telegramBotConfig);
 builder.Services.AddTwitter(twitterBotConfig);
@@ -41,6 +51,13 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseWatchDogExceptionLogger();
+app.UseWatchDog(options =>
+{
+    options.WatchPageUsername = watchdogConfig.WatchPageUsername;
+    options.WatchPagePassword = watchdogConfig.WatchPagePassword;
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

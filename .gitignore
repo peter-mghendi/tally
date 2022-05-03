@@ -455,3 +455,7 @@ $RECYCLE.BIN/
 
 # Development secrets
 secrets.json
+
+# WatchDog
+Web/watchlogs.db
+Web/watchlogs-log.db

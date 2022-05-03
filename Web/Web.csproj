@@ -20,6 +20,7 @@
         <PackageReference Include="Octokit.Webhooks.AspNetCore" Version="0.6.5" />
         <PackageReference Include="Telegram.Bot" Version="17.0.0" />
         <PackageReference Include="TweetinviAPI" Version="5.0.4" />
+        <PackageReference Include="WatchDog.NET" Version="1.1.0" />
     </ItemGroup>
     
 </Project>
