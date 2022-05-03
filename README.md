@@ -23,6 +23,17 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 > <sup>3</sup> I'm (mis)using GitHub Discussions for polls because the Discussion Polls feature is not yet available via the API.
 
+## Features
+- [x] Creating polls.
+- [ ] Concluding polls.
+- [ ] Deleting polls.
+- [x] Voting.
+- [x] Changing votes.
+- [x] Deleting polls.
+- [x] Real-time updates from channels that support it.
+- [x] Automatic results refresh for channels that do not support real-time events. 
+- [ ] Real-time result view updates via SignalR.
+
 ## Screenshots
 
 ```csharp 
