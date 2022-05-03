@@ -50,14 +50,14 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 1. Clone the repo:
 
-```bash
+```shell
 git clone https://github.com/sixpeteunder/tally.git
 cd Tally
 ```
 
 Or (GitHub CLI):
 
-```bash
+```shell
 gh repo clone sixpeteunder/tally
 cd Tally
 ```
@@ -66,33 +66,33 @@ cd Tally
 
 > ⚠️ Telegram requires the use of port `8443`, so most others won't work.
 
-```bash 
+```shell 
 ngrok http https://127.0.0.1:8443
 ```
 
-3. Fill in required credentials and host (ngrok) address:
+3. Using your favourite editor, fill in required credentials and host (ngrok) address:
 
-> The default values provided in appsettings.json are fake sample credentials representing what each field expects.
+> The default values provided in `secrets.json` are fake sample credentials representing what each field expects.
 
-```bash 
-nano ./Web/appsettings.json
+Tally uses the [.NET Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) tool to manage secrets during development. To get started, make a copy of secrets.sample.json, populate it with the required secrets, and then persist them to Secret Manager.
+
+```shell
+cp secrets.sample.json secrets.json
+code ./Web/secrets.json
+cat ./secrets.json | dotnet user-secrets set
 ```
 
-Or (Sublime Text):
+Or (Windows):
 
-```bash
-subl ./Web/appsettings.json
-```
-
-Or (Visual Studio Code):
-
-```bash
-code ./Web/appsettings.json
+```cmd
+copy secrets.sample.json secrets.json
+code .\Web\secrets.json
+type .\secrets.json | dotnet user-secrets set
 ```
 
 4. Navigate to https://127.0.0.1:8443 in your favourite browser.
 
-```bash
+```shell
 xdg-open https://127.0.0.1:8443
 ```
 
