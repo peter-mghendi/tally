@@ -2,6 +2,6 @@ namespace Web.Models.Configuration;
 
 public class WatchDogConfiguration
 {
-    public string WatchPageUsername { get; init; }
-    public string WatchPagePassword { get; init; }
+    public string WatchPageUsername { get; init; } = null!;
+    public string WatchPagePassword { get; init; } = null!;
 }

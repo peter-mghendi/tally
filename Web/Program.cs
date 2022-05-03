@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Telegram.Bot.Types;
 using WatchDog;
 using WatchDog.src.Enums;
 using Web.Channels;
@@ -52,13 +50,6 @@ else
     app.UseHsts();
 }
 
-app.UseWatchDogExceptionLogger();
-app.UseWatchDog(options =>
-{
-    options.WatchPageUsername = watchdogConfig.WatchPageUsername;
-    options.WatchPagePassword = watchdogConfig.WatchPagePassword;
-});
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -66,6 +57,13 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseWatchDogExceptionLogger();
+app.UseWatchDog(options =>
+{
+    options.WatchPageUsername = watchdogConfig.WatchPageUsername;
+    options.WatchPagePassword = watchdogConfig.WatchPagePassword;
+});
 
 app.UseEndpoints(endpoints =>
 {
