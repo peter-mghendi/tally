@@ -18,7 +18,7 @@ public class GitHubChannel : Channel
     public GitHubChannel(Connection connection, IConfiguration configuration, TallyContext tallyContext)
     {
         var gitHubBotConfiguration = configuration.GetRequiredSection(nameof(GitHubBotConfiguration))
-                .Get<GitHubBotConfiguration>();
+            .Get<GitHubBotConfiguration>();
         
         _connection = connection;
         _categoryId = gitHubBotConfiguration.CategoryId;
@@ -30,15 +30,15 @@ public class GitHubChannel : Channel
     
     public override async Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options, CancellationToken cancellationToken = default)
     {
-        var bodyBuilder = new StringBuilder($"{question}\n\nReply with one of the following to vote:");
+        var bodyBuilder = new StringBuilder($"{question}\n\nReply with one of the following to vote:\n");
         var enumerable = options as string[] ?? options.ToArray();
         for (var i = 0; i < enumerable.Length; i++)
         {
             bodyBuilder.Append($"{i}: {enumerable.ElementAt(i)}\n");
         }
         
-        var mutation = new Mutation(
-            ).CreateDiscussion(new CreateDiscussionInput()
+        var mutation = new Mutation()
+            .CreateDiscussion(new CreateDiscussionInput()
             {
                 Title = question, 
                 Body = bodyBuilder.ToString(),

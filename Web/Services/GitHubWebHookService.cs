@@ -36,7 +36,9 @@ public sealed class GitHubWebHookService : IHostedService
         {
             ContentType = WebHookContentType.Json,
             Events = new []{ "discussion_comment" },
-            Secret = _githubBotConfig.WebHookSecret
+            Secret = _githubBotConfig.WebHookSecret,
+            Active = true,
+            InsecureSsl = false            
         };
         
         _hook = await client.Repository.Hooks.Create(_githubBotConfig.RepositoryOwner, _githubBotConfig.RepositoryName, hook);
