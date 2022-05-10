@@ -1,236 +1,285 @@
 @page "{id:int}"
-@using System.Collections.Immutable
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
 @using Web.Models
 @model Web.Pages.Polls.Details
 
 @{
     ViewData["Title"] = "Poll Details";
 
-    #region Channels
-    
-    var channelTotals = Model.Results
-        .Select(pair => (Channel: pair.Key, Votes: pair.Value.Results.Sum(r => r.Votes)))
-        .OrderByDescending(tuple => tuple.Votes)
-        .ToImmutableArray();
-    
-    string topChannelString;
-    string topChannelSuffix;
-
-    var firstChannel = channelTotals[0];
-    if (firstChannel.Votes != channelTotals[1].Votes)
+    var jsonSerializerSettings = new JsonSerializerSettings
     {
-        topChannelString = firstChannel.Channel;
-        topChannelSuffix = "was the most active channel.";
-    }
-    else
-    {
-        var topChannels = channelTotals
-            .Where(c => c.Votes == channelTotals[0].Votes)
-            .Select(c => c.Channel).ToList();
-        topChannelString = $"{string.Join(", ", topChannels.Take(0..^1))} and {topChannels.ElementAt(^1)}";
-        topChannelSuffix = "were the most active channels.";
-    }
-    
-    #endregion
-
-    #region Options
-
-    var optionTotalsDict = new Dictionary<int, int>();
-    foreach (var (optionId, votes) in Model.Results.SelectMany(channel => channel.Value.Results))
-    {
-        if (optionTotalsDict.ContainsKey(optionId))
-            optionTotalsDict[optionId] += votes;
-        else
-            optionTotalsDict[optionId] = votes;
-    }
-
-    var optionTotals = optionTotalsDict
-        .Select(pair => (Option: Model.Poll.Options.Single(o => o.Id == pair.Key).Text, Votes: pair.Value))
-        .ToList();
-
-    var orderedOptionTotals = optionTotals
-        .OrderByDescending(tuple => tuple.Votes)
-        .ToImmutableArray();
-
-    var totalVotes = channelTotals.Sum(ct => ct.Votes);
-
-    string topOptionString;
-    string topOptionSuffix;
-
-    var firstOption = orderedOptionTotals[0];
-    if (firstOption.Votes != orderedOptionTotals[1].Votes)
-    {
-        topOptionString = firstOption.Option;
-        topOptionSuffix = "was the most popular option.";
-    }
-    else
-    {
-        var topOptions = orderedOptionTotals
-            .Where(t => t.Votes == @orderedOptionTotals[0].Votes)
-            .Select(t => t.Option).ToList();
-        topOptionString = $"{string.Join(", ", topOptions.Take(0..^1))} and {topOptions.ElementAt(^1)}";
-        topOptionSuffix = "were the most popular options.";
-    }
-    
-    #endregion
+        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+        Formatting = Formatting.Indented,
+    };
 }
 
 <h1>@ViewData["Title"]</h1>
 
+@* These won't change, they don't need to be reactive. *@
 <div class="d-flex align-items-center justify-content-between mb-3">
-    <p class="display-5 text-muted">"@Model.Poll.Question"</p>
+    <p class="display-5 text-muted" x-text="poll.question">"@Model.Poll.Question"</p>
     <div>
         <button class="btn btn-outline-warning">Conclude</button>
         <a asp-page="./Delete" class="btn btn-outline-danger" asp-route-id="@Model.Poll.Id">Delete</a>
     </div>
 </div>
 
-<div class="d-flex justify-content-around mb-5">
-    <div class="d-flex flex-column align-items-center py-4">
-        <p class="display-3 text-info">@totalVotes</p>
-        <p class="display-6">@(totalVotes == 1 ? "Vote" : "Votes")</p>
+<div x-data="details">
+    <div class="d-flex justify-content-around mb-5">
+        <div class="d-flex flex-column align-items-center py-4">
+            <p class="display-3 text-info" x-text="totalVotes"></p>
+            <p class="display-6" x-text="totalVotes == 1 ? 'Vote' : 'Votes'"></p>
+        </div>
+        <div class="vr"></div>
+        @* These won't change, they don't need to be reactive. *@
+        <div class="d-flex flex-column align-items-center py-4">
+            <h2 class="display-3 text-info">@Model.Poll.ChannelPolls.Count</h2>
+            <p class="display-6">@(Model.Poll.ChannelPolls.Count == 1 ? "Channel" : "Channels")</p>
+        </div>
     </div>
-    <div class="vr"></div>
-    <div class="d-flex flex-column align-items-center py-4">
-        <h2 class="display-3 text-info">@Model.Poll.ChannelPolls.Count</h2>
-        <p class="display-6">@(Model.Poll.ChannelPolls.Count == 1 ? "Channel" : "Channels")</p>
-    </div>
-</div>
 
-<div class="row mb-5">
-    <div class="col-12 col-md-6">
-        <p class="display-6 text-muted mb-3">Overview</p>
-        <partial name="Shared/_PollData" model="Model.Poll"/>
-    </div>
-    <div class="col-12 col-md-6">
-        <p class="display-6 text-muted mb-3">Channels</p>
-        @foreach (var channel in Enum.GetValues<PollChannel>())
-        {
-            <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="platform-telegram" checked="@(Model.Poll.ChannelPolls.Any(cp => cp.Channel == channel) ? "checked" : null)" disabled/>
-                <label for="platform-telegram">@channel.ToString()</label>
-            </div>
-        }
-    </div>
-</div>
-
-<div class="mb-5">
-    <p class="display-6 text-muted mb-3">Live Results</p>
-    <table class="table table-borderless table-hover">
-        <thead>
-        <tr>
-            <th scope="col">Channel</th>
-            @foreach (var option in optionTotals)
-            {
-                <th scope="col">@option.Option</th>
-            }
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var (channel, (pollResults, live, lastRefreshed)) in Model.Results)
-        {
-            <tr>
-                <th scope="row">
-                    @if (live)
-                    {
-                        <div class="spinner-grow spinner-grow-sm text-info me-2" role="status" title="This channel supports live updates. These results are current.">
-                            <span class="visually-hidden">Live</span>
-                        </div>
-                    }
-                    else if (lastRefreshed is not null)
-                    {
-                        <i class="bi bi-slash-circle-fill text-danger me-2" title="This channel does not support live updates. These results were last refreshed at @lastRefreshed."></i>
-                    }
-                    else
-                    {
-                        <i class="bi bi-slash-circle-fill text-danger me-2" title="This channel does not support live updates. These results may be up to 3 hours old."></i>
-                    }
-
-                    @channel
-                </th>
-                @foreach (var total in pollResults)
-                {
-                    <td>@total.Votes</td>
-                }
-            </tr>
-        }
-        </tbody>
-    </table>
-</div>
-
-<div class="mb-5">
-    <p class="display-6 text-muted mb-3">Vote Analysis</p>
+    @* These won't change, they don't need to be reactive. *@
     <div class="row mb-5">
         <div class="col-12 col-md-6">
-            <canvas id="optionsChart" width="400" height="400"></canvas>
+            <p class="display-6 text-muted mb-3">Overview</p>
+            <partial name="Shared/_PollData" model="Model.Poll"/>
         </div>
-        <div class="col-12 col-md-6 d-flex align-items-center py-5">
-            <p class="display-6 mx-auto text-center"><span class="text-info">@topOptionString</span> @topOptionSuffix</p>
+        <div class="col-12 col-md-6">
+            <p class="display-6 text-muted mb-3">Channels</p>
+            @foreach (var channel in Enum.GetValues<PollChannel>())
+            {
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="platform-telegram" checked="@(Model.Poll.ChannelPolls.Any(cp => cp.Channel == channel) ? "checked" : null)" disabled/>
+                    <label for="platform-telegram">@channel.ToString()</label>
+                </div>
+            }
         </div>
     </div>
-    <div class="row mb-5">
-        <div class="col-12 col-md-6 order-md-2">
-            <canvas id="channelsChart" width="400" height="400"></canvas>
+
+    <div class="mb-5">
+        <p class="display-6 text-muted mb-3">Live Results</p>
+        <table class="table table-borderless table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Channel</th>
+                <template x-for="option in optionTotals">
+                    <th scope="col" x-text="option.option"></th>
+                </template>
+            </tr>
+            </thead>
+            <tbody>
+            <template x-for="(option, channel) in results">
+                <tr>
+                    <th scope="row">
+                        <template x-if="option.live">
+                            <div class="spinner-grow spinner-grow-sm text-info me-2" role="status" title="This channel supports live updates. These results are current.">
+                                <span class="visually-hidden">Live</span>
+                            </div>
+                        </template>
+                        <template x-if="!option.live">
+                            <i class="bi bi-slash-circle-fill text-danger me-2" :title="`This channel does not support live updates. These results were last refreshed at ${option.lastRefreshed}.`"></i>
+                        </template>
+
+                        <span x-text="channel" class="text-capitalize"></span>
+                    </th>
+                    <template x-for="total in option.results">
+                        <td x-text="total.votes"></td>
+                    </template>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mb-5">
+        <p class="display-6 text-muted mb-3">Vote Analysis</p>
+        <div class="row mb-5">
+            <div class="col-12 col-md-6">
+                <canvas id="optionsChart" width="400" height="400"></canvas>
+            </div>
+            <div class="col-12 col-md-6 d-flex align-items-center py-5">
+                <p class="display-6 mx-auto text-center">
+                    <span class="text-info" x-text="topOptions.options"></span> <span x-text="topOptions.suffix"></span>
+                </p>
+            </div>
         </div>
-        <div class="col-12 col-md-6 d-flex align-items-center py-5 order-md-1">
-            <p class="display-6 mx-auto text-center"><span class="text-info">@topChannelString</span> @topChannelSuffix</p>
+        <div class="row mb-5">
+            <div class="col-12 col-md-6 order-md-2">
+                <canvas id="channelsChart" width="400" height="400"></canvas>
+            </div>
+            <div class="col-12 col-md-6 d-flex align-items-center py-5 order-md-1">
+                <p class="display-6 mx-auto text-center">
+                    <span class="text-info" x-text="topChannels.channels"></span> <span x-text="topChannels.suffix"></span>
+                </p>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
     <script>
+    function capitalize(string) {
+        return `${string[0].toUpperCase()}${string.substring(1)}`
+    }
+    
+    //#region Alpine
+    document.addEventListener("alpine:init", () => {
+       Alpine.data('details', () => ({
+        init() {
+            initCharts(this.optionTotals, this.channelTotals);
+            this.$watch("results", _ => updateCharts(this.optionTotals.map(t => t.votes), this.channelTotals.map(t => t.votes)))
+        },
+        poll: @Json.Serialize(Model.Poll, jsonSerializerSettings),
+        results: @Json.Serialize(Model.Results, jsonSerializerSettings),
+        
+        get channelTotals() { 
+          return Object.entries(this.results)
+            .map(([key, value]) => ({ 
+                channel: capitalize(key), 
+                votes: value.results.reduce((accumulator, value) => accumulator + value.votes, 0) 
+            }))
+            .sort((a, b) => a.votes > b.votes ? -1 : a.votes < b.votes ? 1 : 0);
+        },
+        get topChannels() {
+            const firstChannel = this.channelTotals[0];
+            if (firstChannel.votes !== this.channelTotals[1].votes)
+            {
+                // There's only one top channel
+                return { channels: firstChannel.channel, suffix: "was the most active channel." }
+            }
+            
+            // Multiple top channels
+            const topChannels = this.channelTotals
+                .filter(c => c.votes === firstChannel.votes)
+                .map(c => c.channel);
+            
+            const lastIndex = topChannels.length - 1;
+            return {
+                channels: `${topChannels.slice(0, lastIndex).join(", ")} and ${topChannels[lastIndex]}`,
+                suffix: "were the most active channels.",
+            };
+        },
+        
+        get optionTotals() { 
+          const optionTotalsDict = {};
+          const allResults = Object.values(this.results).map(r => r.results).reduce((acc, value) => acc.concat(value), []);
+          
+          for (const {optionId, votes} of allResults) {
+               if (optionTotalsDict.hasOwnProperty(optionId))
+                  optionTotalsDict[optionId] += votes;
+              else
+                  optionTotalsDict[optionId] = votes;
+          }
+          
+          return Object.entries(optionTotalsDict)
+                .map(([key, value]) => ({
+                    option: capitalize(this.poll.options.find(o => o.id === parseInt(key)).text), 
+                    votes: value
+                }));
+        },
+        get orderedOptionTotals() { 
+            return this.optionTotals.sort((a, b) => a.votes > b.votes ? -1 : a.votes < b.votes ? 1 : 0); 
+        },
+        get topOptions() { 
+            const firstOption = this.orderedOptionTotals[0];
+            if (firstOption.votes !== this.orderedOptionTotals[1].votes)
+            {
+                // There's only one top option
+                return { options: firstOption.option, suffix: "was the most popular option." }
+            }
+            
+            // Multiple top options
+            const topOptions = this.orderedOptionTotals
+                .filter(c => c.votes === firstOption.votes)
+                .map(c => c.option);
+            
+            const lastIndex = topOptions.length - 1;
+            return {
+                options: `${topOptions.slice(0, lastIndex).join(", ")} and ${topOptions[lastIndex]}`,
+                suffix: "were the most popular options.",
+            };
+        },
+        
+        get totalVotes() { 
+            return this.channelTotals.reduce((acc, value) => acc + value.votes, 0); 
+        }
+       }));
+    });
+    //#endregion
+    
+    //#region Charts
     const optionsChartCtx = document.getElementById('optionsChart').getContext('2d');
     const channelsChartCtx = document.getElementById('channelsChart').getContext('2d');
     
-    const optionsChart = new Chart(optionsChartCtx, {
-        type: 'bar',
-        data: {
-            labels: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Option))),
-            datasets: [{
-                label: '# of votes per option',
-                data: @Html.Raw(Json.Serialize(optionTotals.Select(t => t.Votes))),
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1    
+    let optionsChart;
+    let channelsChart;
+    
+    function initCharts(optionTotals, channelTotals) {
+        optionsChart = new Chart(optionsChartCtx, {
+            type: 'bar',
+            data: {
+                labels: optionTotals.map(t => t.option),
+                datasets: [{
+                    label: '# of votes per option',
+                    data: optionTotals.map(t => t.votes),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1    
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+
+        channelsChart = new Chart(channelsChartCtx, {
+             type: 'doughnut',
+             data: {
+                 labels: channelTotals.map(t => t.channel),
+                 datasets: [{
+                   label: '# of votes per channel',
+                   data: channelTotals.map(t => t.votes),
+                   backgroundColor: [
+                     'rgb(255, 99, 132)',
+                     'rgb(54, 162, 235)'
+                   ],
+                   hoverOffset: 4
+                 }]
+             },
+        });
+    }
     
-    const channelsChart = new Chart(channelsChartCtx, {
-         type: 'doughnut',
-         data: {
-             labels: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Channel))),
-             datasets: [{
-               label: '# of votes per channel',
-               data: @Html.Raw(Json.Serialize(channelTotals.Select(t => t.Votes))),
-               backgroundColor: [
-                 'rgb(255, 99, 132)',
-                 'rgb(54, 162, 235)'
-               ],
-               hoverOffset: 4
-             }]
-         },
-    });
+    function updateCharts(optionsData, channelsData) {
+        optionsChart.data.datasets[0].data = optionsData;  
+        channelsChart.data.datasets[0].data = channelsData;
+        
+        optionsChart.update();
+        channelsChart.update();
+    }
+    
+    // 
+    //#endregion
     </script>
 }
