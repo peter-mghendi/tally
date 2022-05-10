@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using WatchDog;
-using WatchDog.src.Enums;
 using Web.Channels;
 using Web.Data;
 using Web.Hubs;
@@ -16,7 +14,7 @@ var telegramBotConfig = builder.Configuration.GetSection(nameof(TelegramBotConfi
 var twitterBotConfig = builder.Configuration.GetSection(nameof(TwitterBotConfiguration)).Get<TwitterBotConfiguration>();
 var gitHubBotConfig = builder.Configuration.GetSection(nameof(GitHubBotConfiguration)).Get<GitHubBotConfiguration>();
 
-var watchdogConfig = builder.Configuration.GetSection(nameof(WatchDogConfiguration)).Get<WatchDogConfiguration>();
+// var watchdogConfig = builder.Configuration.GetSection(nameof(WatchDogConfiguration)).Get<WatchDogConfiguration>();
 
 builder.Services.AddDbContext<TallyContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -27,11 +25,11 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 
-builder.Services.AddWatchDogServices(opt =>
-{
-    opt.IsAutoClear = true;
-    opt.ClearTimeSchedule = WatchDogAutoClearScheduleEnum.Monthly;
-});
+// builder.Services.AddWatchDogServices(opt =>
+// {
+//     opt.IsAutoClear = true;
+//     opt.ClearTimeSchedule = WatchDogAutoClearScheduleEnum.Monthly;
+// });
  
 builder.Services.AddTelegram(telegramBotConfig);
 builder.Services.AddTwitter(twitterBotConfig);
@@ -60,18 +58,18 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseWatchDogExceptionLogger();
-app.UseWatchDog(options =>
-{
-    options.WatchPageUsername = watchdogConfig.WatchPageUsername;
-    options.WatchPagePassword = watchdogConfig.WatchPagePassword;
-});
+// app.UseWatchDogExceptionLogger();
+// app.UseWatchDog(options =>
+// {
+//     options.WatchPageUsername = watchdogConfig.WatchPageUsername;
+//     options.WatchPagePassword = watchdogConfig.WatchPagePassword;
+// });
 
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapTelegramWebHooks(telegramBotConfig);
     endpoints.MapGitHubWebHooks(gitHubBotConfig);
-    endpoints.MapControllers();
+    // endpoints.MapControllers();
 });
 app.MapRazorPages();
 app.MapHub<TallyHub>("/tally");

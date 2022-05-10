@@ -32,7 +32,7 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 - [x] Deleting polls.
 - [x] Real-time updates from channels that support it.
 - [x] Automatic results refresh for channels that do not support real-time events. 
-- [ ] Real-time result view updates via SignalR.
+- [x] Real-time result view updates via SignalR.
 
 ## Screenshots
 
@@ -64,21 +64,22 @@ cd Tally
 
 2. Start ngrok, pointing to port 8443:
 
-> ⚠️ Telegram requires the use of port `8443`, so most others won't work.
+> ⚠️ [Telegram requires the use of port `443`, `80`, `88` or `8443`](https://core.telegram.org/bots/webhooks), so most others won't work.
 
 ```shell 
-ngrok http https://127.0.0.1:8443
+ngrok http https://localhost:8443
 ```
 
-3. Using your favourite editor, fill in required credentials and host (ngrok) address:
+3. Using your favourite editor, fill required credentials in secrets.json, and host (ngrok) address in appsettings.json:
 
-> The default values provided in `secrets.json` are fake sample credentials representing what each field expects.
+> The default values provided in `secrets.sample.json` are fake sample credentials representing what each field expects.
 
 Tally uses the [.NET Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) tool to manage secrets during development. To get started, make a copy of secrets.sample.json, populate it with the required secrets, and then persist them to Secret Manager.
 
 ```shell
 cp secrets.sample.json secrets.json
 code ./Web/secrets.json
+code ./Web/appsettings.json
 cat ./secrets.json | dotnet user-secrets set
 ```
 
@@ -87,24 +88,27 @@ Or (Windows):
 ```cmd
 copy secrets.sample.json secrets.json
 code .\Web\secrets.json
+code .\Web\appsettings.json
 type .\secrets.json | dotnet user-secrets set
 ```
 
-4. Navigate to https://127.0.0.1:8443 in your favourite browser.
+4. Navigate to https://localhost:8443 in your favourite browser.
 
 ```shell
-xdg-open https://127.0.0.1:8443
+xdg-open https://localhost:8443
 ```
 
 Or (Windows):
 
 ```cmd
-start https://127.0.0.1:8443
+start https://localhost:8443
 ```
 
 ## Webhooks
 
 > The application logs relevant webhook events, but GitHub and [webhook.site](https://webhook.site) also provide excellent tooling for testing webhooks.
+
+> I also use [WatchDog](https://nuget.org/packages/WatchDog.NET) to monitor HTTP activity. The dashboard is accessible at https://localhost:8443/watchdog.
 
 You do not need to set up anything webhook-related. The application will automatically set up webhooks on Telegram and GitHub for you, and will dispose of them when it is shutting down.
 

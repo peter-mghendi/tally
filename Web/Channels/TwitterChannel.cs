@@ -1,6 +1,5 @@
 using LinqToTwitter;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Web.Data;
 using Web.Models;
 

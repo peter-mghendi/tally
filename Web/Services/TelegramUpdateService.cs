@@ -37,6 +37,7 @@ public sealed class TelegramUpdateService
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Update {UpdateId} received from Telegram", update.Id);
         var handler = update.Type switch
         {
             UpdateType.Poll => BotOnPollRequested(update.Poll!),
