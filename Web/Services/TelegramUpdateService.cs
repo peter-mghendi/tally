@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Web.Channels;
 using Web.Data;
+using Web.Hubs;
 using Web.Models;
 using Poll = Telegram.Bot.Types.Poll;
 
@@ -11,15 +14,25 @@ namespace Web.Services;
 
 public sealed class TelegramUpdateService
 {
+    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<TelegramUpdateService> _logger;
     private readonly TallyContext _context;
+    private readonly TelegramChannel _channel;
 
-    public TelegramUpdateService(ITelegramBotClient botClient, ILogger<TelegramUpdateService> logger, TallyContext context)
+    public TelegramUpdateService(
+        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        ITelegramBotClient botClient,
+        ILogger<TelegramUpdateService> logger,
+        TallyContext context,
+        TelegramChannel channel
+    )
     {
+        _hubContext = hubContext;
         _botClient = botClient;
         _logger = logger;
         _context = context;
+        _channel = channel;
     }
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken = default)
@@ -30,7 +43,7 @@ public sealed class TelegramUpdateService
             UpdateType.PollAnswer => BotOnPollAnswered(update.PollAnswer!, cancellationToken),
             UpdateType.Message => BotOnMessageReceived(update.Message!, cancellationToken),
             UpdateType.EditedMessage => BotOnMessageReceived(update.EditedMessage!, cancellationToken),
-            _ => Task.Run(() => _logger.LogInformation("Unsupported update type received."), cancellationToken)
+            _ => Task.Run(() => _logger.LogInformation($"Unsupported update type received: {update.Type.ToString()}."), cancellationToken)
         };
         try
         {
@@ -38,7 +51,7 @@ public sealed class TelegramUpdateService
         }
         catch (Exception exception)
         {
-           HandleError(exception);
+            HandleError(exception);
         }
     }
 
@@ -49,17 +62,18 @@ public sealed class TelegramUpdateService
             return;
 
         var chat = message.Chat;
-        var reply = $"Hi, {chat.Username} you cannot interact with this bot directly. Visit the repo on GitHub for more info,";
+        var reply =
+            $"Hi, {chat.Username} you cannot interact with this bot directly. Visit the repo on GitHub for more info,";
         _ = await _botClient.SendTextMessageAsync(chat.Id, reply, cancellationToken: cancellationToken);
     }
-    
+
     private Task BotOnPollRequested(Poll poll)
     {
         _logger.LogInformation("Poll question: {messageType}", poll.Question);
         _logger.LogInformation("The poll was sent with id: {sentMessageId}", poll.Id);
         return Task.CompletedTask;
     }
-    
+
     private async Task BotOnPollAnswered(PollAnswer pollAnswer, CancellationToken cancellationToken = default)
     {
         var channelPoll = await _context.ChannelPolls
@@ -67,10 +81,11 @@ public sealed class TelegramUpdateService
             .ThenInclude(p => p.Options)
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.LiveVotes)
-            .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram, cancellationToken);
+            .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram,
+                cancellationToken);
         var poll = channelPoll.Poll;
         var userIdentifier = pollAnswer.User.Id.ToString();
-        
+
         _logger.LogInformation("Received Telegram vote for poll: {poll}", poll.Id);
 
         if (pollAnswer.OptionIds.Length <= 0)
@@ -89,6 +104,8 @@ public sealed class TelegramUpdateService
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+        await _hubContext.Clients.Group(poll.Id.ToString())
+            .UpdateResult(nameof(PollChannel.Telegram), await _channel.CountVotesAsync(channelPoll, cancellationToken));
     }
 
     private void HandleError(Exception exception)

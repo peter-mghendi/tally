@@ -1,19 +1,28 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Octokit.Webhooks;
 using Octokit.Webhooks.Events;
 using Octokit.Webhooks.Events.DiscussionComment;
+using Web.Channels;
 using Web.Data;
+using Web.Hubs;
 using Web.Models;
 
 namespace Web.Services;
 
-public class GitHubUpdateService : WebhookEventProcessor
+public sealed class GitHubUpdateService : WebhookEventProcessor
 {
+    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
     private readonly ILogger<GitHubUpdateService> _logger;
     private readonly IServiceProvider _services;
 
-    public GitHubUpdateService(ILogger<GitHubUpdateService> logger, IServiceProvider services)
+    public GitHubUpdateService(
+        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        ILogger<GitHubUpdateService> logger,
+        IServiceProvider services
+    )
     {
+        _hubContext = hubContext;
         _logger = logger;
         _services = services;
     }
@@ -24,8 +33,11 @@ public class GitHubUpdateService : WebhookEventProcessor
         return base.ProcessPingWebhookAsync(headers, pingEvent);
     }
 
-    protected override async Task ProcessDiscussionCommentWebhookAsync(WebhookHeaders headers, DiscussionCommentEvent discussionCommentEvent,
-        DiscussionCommentAction action)
+    protected override async Task ProcessDiscussionCommentWebhookAsync(
+        WebhookHeaders headers,
+        DiscussionCommentEvent discussionCommentEvent,
+        DiscussionCommentAction action
+    )
     {
         const string created = nameof(created);
         const string edited = nameof(edited);
@@ -33,7 +45,8 @@ public class GitHubUpdateService : WebhookEventProcessor
 
         using var scope = _services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
-        
+        var channel = scope.ServiceProvider.GetRequiredService<GitHubChannel>();
+
         var identifier = discussionCommentEvent.Discussion.Number.ToString();
         var channelPoll = await context.ChannelPolls
             .Include(cp => cp.Poll)
@@ -43,7 +56,7 @@ public class GitHubUpdateService : WebhookEventProcessor
             .SingleAsync(cp => cp.Identifier == identifier && cp.Channel == PollChannel.GitHub);
         var poll = channelPoll.Poll;
         var userIdentifier = discussionCommentEvent.Comment.User.Id.ToString();
-        
+
         _logger.LogInformation("Received GitHub vote for poll: {poll}", poll.Id);
 
         var optionIndex = -1;
@@ -62,21 +75,22 @@ public class GitHubUpdateService : WebhookEventProcessor
                 return;
             }
         }
-        
+
         if (discussionCommentEvent.Action is edited or deleted)
         {
             poll.LiveVotes.Remove(poll.LiveVotes
                 .Single(v => v.Channel == PollChannel.GitHub && v.UserIdentifier == userIdentifier));
         }
-        
+
         if (discussionCommentEvent.Action is created or edited)
         {
             if (await context.LiveVotes.AnyAsync(lv =>
                     lv.UserIdentifier == userIdentifier &&
                     lv.Channel == PollChannel.GitHub &&
-                    lv.UserIdentifier == userIdentifier))
+                    lv.Poll.Id == poll.Id))
             {
-                _logger.LogInformation("Discarding vote: Duplicate vote from user {User} for poll {Poll}.", userIdentifier, poll.Id);
+                _logger.LogInformation("Discarding vote: Duplicate vote from user {User} for poll {Poll}.",
+                    userIdentifier, poll.Id);
                 return;
             }
 
@@ -90,5 +104,7 @@ public class GitHubUpdateService : WebhookEventProcessor
 
         await context.SaveChangesAsync();
         await base.ProcessDiscussionCommentWebhookAsync(headers, discussionCommentEvent, action);
+        await _hubContext.Clients.Group(poll.Id.ToString())
+            .UpdateResult(nameof(PollChannel.GitHub), await channel.CountVotesAsync(channelPoll));
     }
 }

@@ -3,6 +3,7 @@ using WatchDog;
 using WatchDog.src.Enums;
 using Web.Channels;
 using Web.Data;
+using Web.Hubs;
 using Web.Models.Configuration;
 using Web.Services;
 using User = Web.Models.User;
@@ -24,6 +25,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
     .AddEntityFrameworkStores<TallyContext>();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 builder.Services.AddWatchDogServices(opt =>
 {
@@ -72,5 +74,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 app.MapRazorPages();
+app.MapHub<TallyHub>("/tally");
 
 app.Run();

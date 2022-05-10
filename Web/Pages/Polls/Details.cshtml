@@ -122,17 +122,22 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
-    <script>
-    function capitalize(string) {
-        return `${string[0].toUpperCase()}${string.substring(1)}`
-    }
-    
+    <script src="https://unpkg.com/@@microsoft/signalr@6.0.4/dist/browser/signalr.js"></script>
+    <script src="https://unpkg.com/humps@2"></script>
+    <script>    
     //#region Alpine
     document.addEventListener("alpine:init", () => {
        Alpine.data('details', () => ({
         init() {
             initCharts(this.optionTotals, this.channelTotals);
             this.$watch("results", _ => updateCharts(this.optionTotals.map(t => t.votes), this.channelTotals.map(t => t.votes)))
+            
+            const connection = new signalR.HubConnectionBuilder().withUrl("/tally").build();
+            
+            connection.on("AcknowledgeSubscription", poll => console.log(`Successfully subscribed to updates for poll #${poll}`));
+            connection.on("UpdateResults", results => this.results = humps.camelizeKeys(results));
+            connection.on("UpdateResult", (channel, result) => this.results[humps.camelize(channel)] = result);
+            connection.start().then(() => connection.invoke("Subscribe", this.poll.id));
         },
         poll: @Json.Serialize(Model.Poll, jsonSerializerSettings),
         results: @Json.Serialize(Model.Results, jsonSerializerSettings),
@@ -140,7 +145,7 @@
         get channelTotals() { 
           return Object.entries(this.results)
             .map(([key, value]) => ({ 
-                channel: capitalize(key), 
+                channel: humps.pascalize(key), 
                 votes: value.results.reduce((accumulator, value) => accumulator + value.votes, 0) 
             }))
             .sort((a, b) => a.votes > b.votes ? -1 : a.votes < b.votes ? 1 : 0);
@@ -178,7 +183,7 @@
           
           return Object.entries(optionTotalsDict)
                 .map(([key, value]) => ({
-                    option: capitalize(this.poll.options.find(o => o.id === parseInt(key)).text), 
+                    option: humps.pascalize(this.poll.options.find(o => o.id === parseInt(key)).text), 
                     votes: value
                 }));
         },
@@ -277,9 +282,7 @@
         
         optionsChart.update();
         channelsChart.update();
-    }
-    
-    // 
+    } 
     //#endregion
     </script>
 }
