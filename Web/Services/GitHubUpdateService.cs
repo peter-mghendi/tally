@@ -57,7 +57,7 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
         var poll = channelPoll.Poll;
         var userIdentifier = discussionCommentEvent.Comment.User.Id.ToString();
 
-        _logger.LogInformation("Received GitHub vote for poll: {poll}", poll.Id);
+        _logger.LogInformation("Received GitHub vote for poll {Poll} with action {Action}", poll.Id, discussionCommentEvent.Action);
 
         var optionIndex = -1;
         if (discussionCommentEvent.Action is created or edited)
@@ -80,6 +80,7 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
         {
             poll.LiveVotes.Remove(poll.LiveVotes
                 .Single(v => v.Channel == PollChannel.GitHub && v.UserIdentifier == userIdentifier));
+            await context.SaveChangesAsync();
         }
 
         if (discussionCommentEvent.Action is created or edited)
