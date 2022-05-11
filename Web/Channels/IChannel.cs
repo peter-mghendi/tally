@@ -10,4 +10,8 @@ public interface IChannel
         CancellationToken cancellationToken = default);
 
     Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
+
+    Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
+
+    Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
 }

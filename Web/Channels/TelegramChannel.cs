@@ -41,4 +41,14 @@ public class TelegramChannel : Channel
             select new PollResult(option.Id, option.LiveVotes.Count(lv => lv.Channel == PollChannel.Telegram));
         return LiveResult(await query.ToListAsync(cancellationToken));
     }
+
+    public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

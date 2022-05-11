@@ -40,4 +40,14 @@ public class TwitterChannel : Channel
             .ToListAsync(cancellationToken);
         return CachedResult(items.Select(i => i.Result).ToList(), items.Min(i => i.Refreshed));
     }
+
+    public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
