@@ -7,7 +7,7 @@
 
 @{
     ViewData["Title"] = "Poll Details";
-
+    
     var jsonSerializerSettings = new JsonSerializerSettings
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -16,18 +16,42 @@
     };
 }
 
-<h1>@ViewData["Title"]</h1>
-
-@* These won't change, they don't need to be reactive. *@
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <p class="display-5 text-muted" x-text="poll.question">"@Model.Poll.Question"</p>
-    <div>
-        <button class="btn btn-outline-warning">Conclude</button>
-        <a asp-page="./Delete" class="btn btn-outline-danger" asp-route-id="@Model.Poll.Id">Delete</a>
-    </div>
-</div>
-
 <div x-data="details">
+    <div x-show="message != null" x-transition class="alert alert-dismissible fade show" :class="`alert-${message?.severity}`" role="alert">
+        <strong x-text="message?.title"></strong> <span x-text="message?.body"></span>
+        @* <button type="button" class="close" data-dismiss="alert" aria-label="Close"> *@
+        @*     <span aria-hidden="true">&times;</span> *@
+        @* </button> *@
+        <button type="button" class="btn-close" aria-label="Close" @@click="message = null"></button>
+    </div>
+
+    <h1>@ViewData["Title"]</h1>
+    
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <p class="display-5 text-muted" x-text="poll.question">"@Model.Poll.Question"</p>
+        <div>
+            <button class="btn btn-outline-primary" :disabled="refreshing" @@click="refresh">
+                <span x-show="!refreshing">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Refresh
+                </span>
+                <span x-show="refreshing">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Refreshing...
+                </span>
+            </button>
+            @* These won't change, they don't need to be reactive. *@
+            <button class="btn btn-outline-warning">
+                <i class="bi bi-stop-fill"></i>
+                Conclude
+            </button>
+            <a asp-page="./Delete" class="btn btn-outline-danger" asp-route-id="@Model.Poll.Id">
+                <i class="bi bi-trash"></i>
+                Delete
+            </a>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-around mb-5">
         <div class="d-flex flex-column align-items-center py-4">
             <p class="display-3 text-info" x-text="totalVotes"></p>
@@ -132,15 +156,22 @@
             initCharts(this.optionTotals, this.channelTotals);
             this.$watch("results", _ => updateCharts(this.optionTotals.map(t => t.votes), this.channelTotals.map(t => t.votes)))
             
-            const connection = new signalR.HubConnectionBuilder().withUrl("/tally").build();
+            this.connection = new signalR.HubConnectionBuilder().withUrl("/tally").build();
             
-            connection.on("AcknowledgeSubscription", poll => console.log(`Successfully subscribed to updates for poll #${poll}`));
-            connection.on("UpdateResults", results => this.results = humps.camelizeKeys(results));
-            connection.on("UpdateResult", (channel, result) => this.results[humps.camelize(channel)] = result);
-            connection.start().then(() => connection.invoke("Subscribe", this.poll.id));
+            this.connection.on("AcknowledgeSubscription", poll => console.log(`Successfully subscribed to updates for poll #${poll}`));
+            this.connection.on("UpdateResults", results => {  
+                this.results = humps.camelizeKeys(results);
+                this.refreshing = false;
+                this.showMessage("Success!", "Successfully refreshed results.", "success");
+            });
+            this.connection.on("UpdateResult", (channel, result) => this.results[humps.camelize(channel)] = result);
+            this.connection.start().then(() => this.connection.invoke("Subscribe", this.poll.id));
         },
         poll: @Json.Serialize(Model.Poll, jsonSerializerSettings),
         results: @Json.Serialize(Model.Results, jsonSerializerSettings),
+        connection: null,
+        message: null,
+        refreshing: false,
         
         get channelTotals() { 
           return Object.entries(this.results)
@@ -209,9 +240,17 @@
                 suffix: "were the most popular options.",
             };
         },
-        
+       
         get totalVotes() { 
             return this.channelTotals.reduce((acc, value) => acc + value.votes, 0); 
+        },
+        
+        refresh() {
+            this.connection.invoke("Refresh", this.poll.id)
+        },
+        showMessage(title, body, severity) {
+            this.message = { title, body, severity }
+            setTimeout(() => this.message = null, 3000);
         }
        }));
     });
@@ -282,7 +321,7 @@
         
         optionsChart.update();
         channelsChart.update();
-    } 
+    }    
     //#endregion
     </script>
 }

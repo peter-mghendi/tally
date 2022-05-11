@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,6 +13,7 @@ namespace Web.Pages.Polls;
 public class Details : PageModel
 {
     private readonly TallyContext _context;
+    private readonly ChannelWrapper _channels;
     private readonly IChannel _telegramChannel;
     private readonly IChannel _twitterChannel;
     private readonly IChannel _githubChannel;
@@ -28,6 +30,7 @@ public class Details : PageModel
     public Details(TallyContext context, ChannelWrapper channels)
     {
         _context = context;
+        _channels = channels;
         _telegramChannel = channels.Telegram;
         _twitterChannel = channels.Twitter;
         _githubChannel = channels.GitHub;
@@ -43,15 +46,13 @@ public class Details : PageModel
             .Include(p => p.Options)
             .SingleAsync(p => p.Id == Id);
 
-        var telegramPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Telegram);
-        var twitterPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Twitter);
-        var githubPoll = Poll.ChannelPolls.Single(cp => cp.Channel == PollChannel.Twitter);
+        Results = new Dictionary<string, ChannelResult>();
 
-        Results = new Dictionary<string, ChannelResult>
+        foreach (var channelPoll in Poll.ChannelPolls)
         {
-            [nameof(PollChannel.Telegram)] = await _telegramChannel.CountVotesAsync(telegramPoll),
-            [nameof(PollChannel.Twitter)] = await _twitterChannel.CountVotesAsync(twitterPoll),
-            [nameof(PollChannel.GitHub)] = await _githubChannel.CountVotesAsync(githubPoll),
-        };
+            var pollChannel = channelPoll.Channel;
+            var channel = _channels.Resolve(pollChannel);
+            Results.Add(pollChannel.ToString(), await  channel.CountVotesAsync(channelPoll));
+        }
     }
 }
