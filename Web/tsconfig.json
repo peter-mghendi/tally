@@ -1,0 +1,17 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "ES2015",
+    "moduleResolution": "Node",
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "rootDir": "Resources/scripts",
+    "sourceMap": true,
+    "target": "ES2015",
+    "outDir": "wwwroot/js"
+  },
+  "include": [
+    "Resources/scripts/**/*"
+  ]
+}

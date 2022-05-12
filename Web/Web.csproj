@@ -6,6 +6,16 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-Web-7D765E6C-BC34-4156-BD31-6DF741B642FF</UserSecretsId>
     </PropertyGroup>
+    
+<!--    <Target Name="AfterBuild">-->
+<!--        <Message Text="Bundling JS" />-->
+<!--        <Exec Command="npm run build" />-->
+<!--    </Target>-->
+<!--    -->
+<!--    <Target Name="AfterClean">-->
+<!--        <Message Text="Cleaning up Generated JS" />-->
+<!--        <RemoveDir Directories="wwwroot/js/polls" />-->
+<!--    </Target>-->
 
     <ItemGroup>
         <PackageReference Include="linqtotwitter" Version="6.14.0" />
@@ -15,6 +25,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.4">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Octokit" Version="0.51.0" />
         <PackageReference Include="Octokit.GraphQL" Version="0.1.8-beta" />
         <PackageReference Include="Octokit.Webhooks.AspNetCore" Version="0.6.5" />
@@ -22,5 +36,13 @@
         <PackageReference Include="TweetinviAPI" Version="5.0.4" />
         <PackageReference Include="WatchDog.NET" Version="1.1.0" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <TypeScriptCompile Include="Resources\Scripts\polls\details.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\js\polls\details.g.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\polls\details.g.js.map" />
+    </ItemGroup>    
 </Project>

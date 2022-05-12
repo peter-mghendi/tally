@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace Web.Models;
 
@@ -22,8 +23,10 @@ public partial class Poll
     
     public IList<Option> Options { get; set; } = new List<Option>();
     
+    [JsonIgnore]
     public ICollection<LiveVote> LiveVotes { get; set; } = new List<LiveVote>();
     
+    [JsonIgnore]
     public ICollection<CachedVote> CachedVotes { get; set; } = new List<CachedVote>();
 
     public PollStatus Status => StartedAt > DateTime.UtcNow ? PollStatus.Scheduled

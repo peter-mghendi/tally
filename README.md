@@ -91,8 +91,30 @@ code .\Web\secrets.json
 code .\Web\appsettings.json
 type .\secrets.json | dotnet user-secrets set
 ```
+4. Run the program
 
-4. Navigate to https://localhost:8443 in your favourite browser.
+> Moving to TypeScript has complicated the build process a little. 
+> You will now need to ensure TypeScript files are built and bundled before running the app, while I figure out a better way to do this.
+> (Looking into MSbuild and npm watch.)
+
+> These commands must be run in exactly this order, because TypeScript compilation is handled by the MSBuild pipeline, and bundling is handled by webpack.
+
+```shell
+# Get rid of old built assets (Optional, recommended) 
+dotnet clean 
+npm run clean
+
+# Build new assets
+dotnet build
+npm run build
+```
+Run the app
+
+```shell
+dotnet run
+```
+
+5. Navigate to https://localhost:8443 in your favourite browser.
 
 ```shell
 xdg-open https://localhost:8443
