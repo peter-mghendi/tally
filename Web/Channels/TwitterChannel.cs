@@ -30,7 +30,8 @@ public class TwitterChannel : Channel
             cancelToken: cancellationToken
         );
 
-        return BuildPoll(pollTweet!.ID!);
+        var tweetId = pollTweet!.ID!;
+        return BuildPoll(tweetId, tweetId);
     }
 
     public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll,
@@ -45,8 +46,8 @@ public class TwitterChannel : Channel
 
     public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Attempting to conclude Twitter poll (Tweet ID: {Tweet}), which cannot be manually concluded.", channelPoll.Identifier);
-        throw new NotImplementedException();
+        _logger.LogInformation("Attempting to conclude Twitter poll (Tweet ID: {Tweet}), which cannot be manually concluded.", channelPoll.PrimaryIdentifier);
+        return Task.CompletedTask;
     }
 
     public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)

@@ -40,7 +40,7 @@ public class TelegramChannel : Channel
             cancellationToken: cancellationToken
         );
 
-        return BuildPoll(pollMessage.MessageId.ToString());
+        return BuildPoll(pollMessage.MessageId.ToString(), pollMessage.Poll!.Id);
     }
 
     public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll,
@@ -54,7 +54,7 @@ public class TelegramChannel : Channel
 
     public override async Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        var poll = await _botClient.StopPollAsync(_chatId, int.Parse(channelPoll.Identifier),
+        var poll = await _botClient.StopPollAsync(_chatId, int.Parse(channelPoll.PrimaryIdentifier),
             cancellationToken: cancellationToken);
         _logger.LogInformation("Closing Telegram channel poll for poll {Poll}. {Votes} votes were received",
             channelPoll.Poll.Id, poll.TotalVoterCount);

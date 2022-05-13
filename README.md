@@ -17,7 +17,7 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 | Discord              | No             | ?                      | ?         | ?                                                                                      | ?                         | ?                          | ?                              | ?                            |
 | Web                  | No             | No                     | Yes       | HTML form                                                                              | Infinite                  | HTML form                  | Disable voting                 | Delete poll                  |
 
-> <sup>1</sup> User-identifiers are colected via some voting channels to identify duplicate votes, and to enable vote editing and deletion. Twitter does not offer any of these features.
+> <sup>1</sup> User-identifiers are collected via some voting channels to identify duplicate votes, and to enable vote editing and deletion. Twitter does not offer any of these features.
 
 > <sup>2</sup> Telegram has an anonymous polls feature which I'm not using because it makes it significantly harder to monitor poll results.
 
@@ -25,7 +25,7 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 ## Features
 - [x] Creating polls.
-- [ ] Concluding polls.
+- [x] Concluding polls.
 - [ ] Deleting polls.
 - [x] Voting.
 - [x] Changing votes.
@@ -44,9 +44,9 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 0. Prerequisites
 - Git
-- .NET 6 SDK (Set up for local HTTPS development).
+- [.NET 6 SDK](https://get.dot.net/6) (Set up for local HTTPS development).
 - Ngrok
-- All applicable credentaials (see [appsettings.json](https://github.com/sixpeteunder/tally/tree/main/Web/appsetings.json)).
+- All applicable credentials (see [appsettings.json](https://github.com/sixpeteunder/tally/tree/main/Web/appsetings.json)).
 
 1. Clone the repo:
 
@@ -95,9 +95,9 @@ type .\secrets.json | dotnet user-secrets set
 
 > Moving to TypeScript has complicated the build process a little. 
 > You will now need to ensure TypeScript files are built and bundled before running the app, while I figure out a better way to do this.
-> (Looking into MSbuild and npm watch.)
+> (Looking into MS Build and npm watch.)
 
-> These commands must be run in exactly this order, because TypeScript compilation is handled by the MSBuild pipeline, and bundling is handled by webpack.
+> These commands must be run in exactly this order, because TypeScript compilation is handled by the MS Build pipeline, and bundling is handled by webpack.
 
 ```shell
 # Get rid of old built assets (Optional, recommended) 
@@ -136,14 +136,18 @@ You do not need to set up anything webhook-related. The application will automat
 
 ## Channel Poll Identifiers
 
-Tally stores a "Channel poll identifier" for each poll on each channel, that allows it to find and manage the linked poll.
+Tally stores a pair of "Channel Poll Identifiers" for each poll on each channel, that allows it to find and manage the linked poll.
+
+> A "Primary" and "Auxiliary" identifier is stored for each channel because the relevant APIs sometimes require different identifiers for different actions.
 
 The table below shows exactly what is stored for each platform.
 
-| Channel  | Identifier           |
-|----------|----------------------|
-| Telegram | Chat ID, Message ID  |
-| Twitter  | Tweet ID             |
-| GitHub   | Discussion Node ID   |
-| Discord  | ?                    |
-| Web      | Locally Generated ID |
+| Channel              | Primary Identifier   | Auxiliary Identifier |
+|----------------------|----------------------|----------------------|
+| Telegram<sup>1</sup> | Message ID           | Poll Id              |
+| Twitter              | Tweet ID             | Tweet ID             |
+| GitHub               | Discussion Node ID   | Discussion Number    |
+| Discord              | ?                    | ?                    |
+| Web                  | Locally Generated ID | Locally Generated ID |
+
+<sup>1</sup> For Telegram, the Chat ID is also stored, to identify the Chat the poll message was sent to.

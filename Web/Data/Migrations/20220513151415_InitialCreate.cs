@@ -182,7 +182,8 @@ namespace Web.Data.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Channel = table.Column<int>(type: "INTEGER", nullable: false),
-                    Identifier = table.Column<string>(type: "TEXT", nullable: false),
+                    PrimaryIdentifier = table.Column<string>(type: "TEXT", nullable: false),
+                    AuxiliaryIdentifier = table.Column<string>(type: "TEXT", nullable: false),
                     PollId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -225,8 +226,8 @@ namespace Web.Data.Migrations
                     Count = table.Column<int>(type: "INTEGER", nullable: false),
                     Channel = table.Column<int>(type: "INTEGER", nullable: false),
                     LastRefreshedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    OptionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PollId = table.Column<int>(type: "INTEGER", nullable: false)
+                    PollId = table.Column<int>(type: "INTEGER", nullable: false),
+                    OptionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -312,6 +313,17 @@ namespace Web.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_CachedVotes_Channel",
+                table: "CachedVotes",
+                column: "Channel");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CachedVotes_Channel_OptionId",
+                table: "CachedVotes",
+                columns: new[] { "Channel", "OptionId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CachedVotes_OptionId",
                 table: "CachedVotes",
                 column: "OptionId");
@@ -322,15 +334,47 @@ namespace Web.Data.Migrations
                 column: "PollId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChannelPolls_Channel_Identifier",
+                name: "IX_ChannelPolls_AuxiliaryIdentifier",
                 table: "ChannelPolls",
-                columns: new[] { "Channel", "Identifier" },
+                column: "AuxiliaryIdentifier");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelPolls_Channel",
+                table: "ChannelPolls",
+                column: "Channel");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelPolls_Channel_AuxiliaryIdentifier",
+                table: "ChannelPolls",
+                columns: new[] { "Channel", "AuxiliaryIdentifier" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelPolls_Channel_PrimaryIdentifier",
+                table: "ChannelPolls",
+                columns: new[] { "Channel", "PrimaryIdentifier" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChannelPolls_PollId",
                 table: "ChannelPolls",
                 column: "PollId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelPolls_PrimaryIdentifier",
+                table: "ChannelPolls",
+                column: "PrimaryIdentifier");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LiveVotes_Channel",
+                table: "LiveVotes",
+                column: "Channel");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LiveVotes_Channel_UserIdentifier",
+                table: "LiveVotes",
+                columns: new[] { "Channel", "UserIdentifier" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_LiveVotes_OptionId",
@@ -341,6 +385,11 @@ namespace Web.Data.Migrations
                 name: "IX_LiveVotes_PollId",
                 table: "LiveVotes",
                 column: "PollId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LiveVotes_UserIdentifier",
+                table: "LiveVotes",
+                column: "UserIdentifier");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Options_PollId",

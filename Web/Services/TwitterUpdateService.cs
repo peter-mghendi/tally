@@ -53,7 +53,14 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
             foreach (var channelPoll in channelPolls)
             {
                 var poll = channelPoll.Poll;
-                var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.Identifier);
+
+                if (poll.EndedAt is not null)
+                {
+                    _logger.LogInformation("Skipping Twitter update for concluded poll: {Poll}", poll.Id);
+                    continue;
+                }
+                
+                var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.PrimaryIdentifier);
                 var tweetPollOptions = tweet.Includes.Polls[0].PollOptions;
 
                 var voteCounts = poll.Options.Select((option, index) => new CachedVote

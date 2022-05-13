@@ -80,25 +80,29 @@ document.addEventListener("alpine:init", () => {
     alpine.data('details', () => ({
         init() {
             initCharts(this.optionTotals, this.channelTotals);
-            this.$watch("results", _ => {
-                updateCharts(this.optionTotals.map((t: OptionTotal) => t.votes), this.channelTotals.map((c: ChannelTotal) => c.votes));
-            })
-
-            this.connection = new HubConnectionBuilder().withUrl("/tally").build();
-
-            this.connection.on("AcknowledgeSubscription", poll => console.log(`Successfully subscribed to updates for poll #${poll}`));
-            this.connection.on("UpdateResults", (results: Results)  => {
-                this.results = new Map<string, ChannelResult>(Object.entries(camelizeKeys(results)));
-                this.refreshing = false;
-                this.showMessage("Success!", "Successfully refreshed results.", "success");
-            });
-            this.connection.on("UpdateResult", (channel: string, result: ChannelResult) => {
-                this.results.set(camelize(channel), result);
+            
+            // Only not set up a SignalR connection if the poll has not concluded.
+            if (this.poll.endedAt === null) {
+                this.$watch("results", _ => {
+                    updateCharts(this.optionTotals.map((t: OptionTotal) => t.votes), this.channelTotals.map((c: ChannelTotal) => c.votes));
+                })
                 
-                // Alpine is not calling the $watch handler. This is a workaround until I figure that out.
-                updateCharts(this.optionTotals.map((t: OptionTotal) => t.votes), this.channelTotals.map((c: ChannelTotal) => c.votes));
-            });
-            this.connection.start().then(() => this.connection.invoke("Subscribe", this.poll.id));
+                this.connection = new HubConnectionBuilder().withUrl("/tally").build();
+
+                this.connection.on("AcknowledgeSubscription", poll => console.log(`Successfully subscribed to updates for poll #${poll}`));
+                this.connection.on("UpdateResults", (results: Results) => {
+                    this.results = new Map<string, ChannelResult>(Object.entries(camelizeKeys(results)));
+                    this.refreshing = false;
+                    this.showMessage("Success!", "Successfully refreshed results.", "success");
+                });
+                this.connection.on("UpdateResult", (channel: string, result: ChannelResult) => {
+                    this.results.set(camelize(channel), result);
+
+                    // Alpine is not calling the $watch handler. This is a workaround until I figure that out.
+                    updateCharts(this.optionTotals.map((t: OptionTotal) => t.votes), this.channelTotals.map((c: ChannelTotal) => c.votes));
+                });
+                this.connection.start().then(() => this.connection.invoke("Subscribe", this.poll.id));
+            }
         },
         // @ts-ignore
         poll: initialPoll as Poll,

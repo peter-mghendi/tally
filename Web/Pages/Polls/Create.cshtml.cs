@@ -61,9 +61,12 @@ public class Create : PageModel
         var cachedVotes = new List<CachedVote>();
         foreach (var channelPoll in cachedChannelPolls)
         {
-            var voteCounts = Poll.Options.Select((t, i) => new CachedVote
+            var voteCounts = Poll.Options.Select((option, _) => new CachedVote
             {
-                Count = 0, Channel = channelPoll.Channel, Option = t, Poll = Poll,
+                Count = 0, 
+                Channel = channelPoll.Channel, 
+                Option = option, 
+                Poll = Poll,
             });
             cachedVotes.AddRange(voteCounts);
         }

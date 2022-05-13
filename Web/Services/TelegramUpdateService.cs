@@ -70,8 +70,7 @@ public sealed class TelegramUpdateService
 
     private Task BotOnPollRequested(Poll poll)
     {
-        _logger.LogInformation("Poll question: {messageType}", poll.Question);
-        _logger.LogInformation("The poll was sent with id: {sentMessageId}", poll.Id);
+        _logger.LogInformation("Poll {Question} was sent with id: {SentMessageId}", poll.Question,  poll.Id);
         return Task.CompletedTask;
     }
 
@@ -82,12 +81,19 @@ public sealed class TelegramUpdateService
             .ThenInclude(p => p.Options)
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.LiveVotes)
-            .SingleAsync(cp => cp.Identifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram,
+            .SingleAsync(cp => cp.AuxiliaryIdentifier == pollAnswer.PollId && cp.Channel == PollChannel.Telegram,
                 cancellationToken);
         var poll = channelPoll.Poll;
+
+        if (poll.EndedAt is not null)
+        {
+            _logger.LogInformation("Discarding Telegram vote for concluded poll: {Poll}", poll.Id);
+            return;
+        }
+        
         var userIdentifier = pollAnswer.User.Id.ToString();
 
-        _logger.LogInformation("Received Telegram vote for poll: {poll}", poll.Id);
+        _logger.LogInformation("Received Telegram vote for poll: {Poll}", poll.Id);
 
         if (pollAnswer.OptionIds.Length <= 0)
         {
@@ -114,7 +120,7 @@ public sealed class TelegramUpdateService
         var errorMessage = exception switch
         {
             ApiRequestException apiRequestException =>
-                $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                $"Telegram API Error: [{apiRequestException.ErrorCode}]: {apiRequestException.Message}",
             _ => exception.ToString()
         };
 

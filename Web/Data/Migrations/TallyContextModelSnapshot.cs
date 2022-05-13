@@ -172,9 +172,14 @@ namespace Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Channel");
+
                     b.HasIndex("OptionId");
 
                     b.HasIndex("PollId");
+
+                    b.HasIndex("Channel", "OptionId")
+                        .IsUnique();
 
                     b.ToTable("CachedVotes");
                 });
@@ -185,21 +190,34 @@ namespace Web.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Channel")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Identifier")
+                    b.Property<string>("AuxiliaryIdentifier")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PollId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("PrimaryIdentifier")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AuxiliaryIdentifier");
+
+                    b.HasIndex("Channel");
 
                     b.HasIndex("PollId");
 
-                    b.HasIndex("Channel", "Identifier")
+                    b.HasIndex("PrimaryIdentifier");
+
+                    b.HasIndex("Channel", "AuxiliaryIdentifier")
+                        .IsUnique();
+
+                    b.HasIndex("Channel", "PrimaryIdentifier")
                         .IsUnique();
 
                     b.ToTable("ChannelPolls");
@@ -229,9 +247,16 @@ namespace Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Channel");
+
                     b.HasIndex("OptionId");
 
                     b.HasIndex("PollId");
+
+                    b.HasIndex("UserIdentifier");
+
+                    b.HasIndex("Channel", "UserIdentifier")
+                        .IsUnique();
 
                     b.ToTable("LiveVotes");
                 });

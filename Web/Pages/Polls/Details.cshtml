@@ -19,9 +19,6 @@
 <div x-data="details">
     <div x-show="message != null" x-transition class="alert alert-dismissible fade show" :class="`alert-${message?.severity}`" role="alert">
         <strong x-text="message?.title"></strong> <span x-text="message?.body"></span>
-        @* <button type="button" class="close" data-dismiss="alert" aria-label="Close"> *@
-        @*     <span aria-hidden="true">&times;</span> *@
-        @* </button> *@
         <button type="button" class="btn-close" aria-label="Close" @@click="message = null"></button>
     </div>
 
@@ -41,10 +38,10 @@
                 </span>
             </button>
             @* These won't change, they don't need to be reactive. *@
-            <button class="btn btn-outline-warning">
+            <a asp-page="./Conclude" class="btn btn-outline-warning @(Model.Poll.EndedAt is null ? null : "disabled" )" asp-route-id="@Model.Poll.Id">
                 <i class="bi bi-stop-fill"></i>
                 Conclude
-            </button>
+            </a>
             <a asp-page="./Delete" class="btn btn-outline-danger" asp-route-id="@Model.Poll.Id">
                 <i class="bi bi-trash"></i>
                 Delete

@@ -45,11 +45,11 @@ public class GitHubChannel : Channel
                 CategoryId = new ID(_categoryId),
                 RepositoryId = new ID(_repositoryId)
             })
-            .Select(payload => new { payload.Discussion.Id })
+            .Select(payload => new { payload.Discussion.Id, payload.Discussion.Number })
             .Compile();
 
         var result = await _connection.Run(mutation, cancellationToken: cancellationToken);
-        return BuildPoll(result.Id.Value);
+        return BuildPoll(result.Id.Value, result.Number.ToString());
     }
 
     public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
@@ -64,7 +64,7 @@ public class GitHubChannel : Channel
         var mutation = new Mutation()
             .LockLockable(new LockLockableInput
             {
-                LockableId = new ID(channelPoll.Identifier), 
+                LockableId = new ID(channelPoll.PrimaryIdentifier), 
                 LockReason = LockReason.Resolved
             })
             .Select(payload => new {payload.LockedRecord.Locked})

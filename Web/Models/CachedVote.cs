@@ -8,4 +8,5 @@ public class CachedVote
     public DateTime LastRefreshedAt { get; set; } = DateTime.UtcNow;
     public Option Option { get; set; } = null!;
     public Poll Poll { get; set; } = null!;
+    public int OptionId { get; set; }
 }

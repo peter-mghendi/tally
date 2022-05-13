@@ -16,7 +16,12 @@ public abstract class Channel : IChannel
 
     public abstract Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
 
-    protected ChannelPoll BuildPoll(string identifier) => new() {Channel = PollChannel, Identifier = identifier};
+    protected ChannelPoll BuildPoll(string primaryIdentifier, string auxiliaryIdentifier) => new()
+    {
+        Channel = PollChannel, 
+        PrimaryIdentifier = primaryIdentifier,
+        AuxiliaryIdentifier = auxiliaryIdentifier
+    };
 
     protected static ChannelResult CachedResult(List<PollResult> results, DateTime lastUpdated)
         => new(results, false, lastUpdated);

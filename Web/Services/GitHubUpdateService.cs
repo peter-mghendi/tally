@@ -53,8 +53,14 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
             .ThenInclude(p => p.Options)
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.LiveVotes)
-            .SingleAsync(cp => cp.Identifier == identifier && cp.Channel == PollChannel.GitHub);
+            .SingleAsync(cp => cp.PrimaryIdentifier == identifier && cp.Channel == PollChannel.GitHub);
         var poll = channelPoll.Poll;
+
+        if (poll.EndedAt is not null)
+        {
+            _logger.LogInformation("Discarding GitHub vote for concluded poll: {Poll}", poll.Id);
+        }
+        
         var userIdentifier = discussionCommentEvent.Comment.User.Id.ToString();
 
         _logger.LogInformation("Received GitHub vote for poll {Poll} with action {Action}", poll.Id, discussionCommentEvent.Action);
