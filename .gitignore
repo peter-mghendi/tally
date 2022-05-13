@@ -459,3 +459,6 @@ secrets.json
 # WatchDog
 Web/watchlogs.db
 Web/watchlogs-log.db
+
+# Generated JS
+Web/wwwroot/js/polls/

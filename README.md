@@ -134,3 +134,16 @@ start https://localhost:8443
 
 You do not need to set up anything webhook-related. The application will automatically set up webhooks on Telegram and GitHub for you, and will dispose of them when it is shutting down.
 
+## Channel Poll Identifiers
+
+Tally stores a "Channel poll identifier" for each poll on each channel, that allows it to find and manage the linked poll.
+
+The table below shows exactly what is stored for each platform.
+
+| Channel  | Identifier           |
+|----------|----------------------|
+| Telegram | Chat ID, Message ID  |
+| Twitter  | Tweet ID             |
+| GitHub   | Discussion Node ID   |
+| Discord  | ?                    |
+| Web      | Locally Generated ID |

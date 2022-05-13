@@ -14,4 +14,7 @@ public interface IChannel
     Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
 
     Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default);
+    
+    // TODO: Add a URL method/property for linking to the Poll from the Web channel page.
+    // Or add it to the channel poll itself?
 }

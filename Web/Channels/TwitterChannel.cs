@@ -7,11 +7,13 @@ namespace Web.Channels;
 
 public class TwitterChannel : Channel
 {
+    private readonly ILogger<TwitterChannel> _logger;
     private readonly TwitterContext _context;
     private readonly TallyContext _tallyContext;
 
-    public TwitterChannel(TwitterContext context, TallyContext tallyContext, ILogger<TwitterChannel> logger)
+    public TwitterChannel(ILogger<TwitterChannel> logger, TwitterContext context, TallyContext tallyContext)
     {
+        _logger = logger;
         _context = context;
         _tallyContext = tallyContext;
     }
@@ -43,6 +45,7 @@ public class TwitterChannel : Channel
 
     public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Attempting to conclude Twitter poll (Tweet ID: {Tweet}), which cannot be manually concluded.", channelPoll.Identifier);
         throw new NotImplementedException();
     }
 

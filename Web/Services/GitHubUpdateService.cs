@@ -47,7 +47,7 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
         await using var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
         var channel = scope.ServiceProvider.GetRequiredService<GitHubChannel>();
 
-        var identifier = discussionCommentEvent.Discussion.Number.ToString();
+        var identifier = discussionCommentEvent.Discussion.NodeId;
         var channelPoll = await context.ChannelPolls
             .Include(cp => cp.Poll)
             .ThenInclude(p => p.Options)

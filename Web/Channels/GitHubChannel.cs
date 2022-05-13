@@ -45,11 +45,11 @@ public class GitHubChannel : Channel
                 CategoryId = new ID(_categoryId),
                 RepositoryId = new ID(_repositoryId)
             })
-            .Select(payload => new { payload.Discussion.Number })
+            .Select(payload => new { payload.Discussion.Id })
             .Compile();
 
         var result = await _connection.Run(mutation, cancellationToken: cancellationToken);
-        return BuildPoll(result.Number.ToString());
+        return BuildPoll(result.Id.Value);
     }
 
     public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
@@ -59,9 +59,18 @@ public class GitHubChannel : Channel
         return LiveResult(await query.ToListAsync(cancellationToken));
     }
 
-    public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var mutation = new Mutation()
+            .LockLockable(new LockLockableInput
+            {
+                LockableId = new ID(channelPoll.Identifier), 
+                LockReason = LockReason.Resolved
+            })
+            .Select(payload => new {payload.LockedRecord.Locked})
+            .Compile();
+        
+        var result = await _connection.Run(mutation, cancellationToken: cancellationToken);
     }
 
     public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
