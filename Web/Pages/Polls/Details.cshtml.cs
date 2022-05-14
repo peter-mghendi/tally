@@ -14,9 +14,6 @@ public class Details : PageModel
 {
     private readonly TallyContext _context;
     private readonly ChannelWrapper _channels;
-    private readonly IChannel _telegramChannel;
-    private readonly IChannel _twitterChannel;
-    private readonly IChannel _githubChannel;
 
     [BindProperty(SupportsGet = true)] 
     public int Id { get; set; }
@@ -31,9 +28,6 @@ public class Details : PageModel
     {
         _context = context;
         _channels = channels;
-        _telegramChannel = channels.Telegram;
-        _twitterChannel = channels.Twitter;
-        _githubChannel = channels.GitHub;
 
         Poll = new Poll();
         Results = new Dictionary<string, ChannelResult>();

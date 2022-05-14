@@ -62,4 +62,9 @@ public static class ServicesConfiguration
         services.AddHostedService<GitHubWebHookService>();
         services.AddScoped<GitHubChannel>();
     }
+
+    public static void AddDiscord(this IServiceCollection services, DiscordBotConfiguration discordBotConfig)
+    {
+        services.AddScoped<DiscordChannel>();
+    }
 }

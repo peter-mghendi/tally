@@ -29,7 +29,13 @@ public class Create : PageModel
     {
         _logger = logger;
         _context = context;
-        _channels = new List<IChannel>() {channels.Telegram, channels.Twitter, channels.GitHub};
+        _channels = new List<IChannel>()
+        {
+            channels.Telegram, 
+            channels.Twitter, 
+            channels.GitHub,
+            channels.Discord
+        };
         _userManager = userManager;
         
         Poll = new Poll();
@@ -49,7 +55,8 @@ public class Create : PageModel
         {
             await _channels[0].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
             await _channels[1].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _channels[2].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
+            await _channels[2].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
+            // await _channels[3].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
         };
 
         await _context.Polls.AddAsync(Poll);

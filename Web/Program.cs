@@ -13,6 +13,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var telegramBotConfig = builder.Configuration.GetSection(nameof(TelegramBotConfiguration)).Get<TelegramBotConfiguration>();
 var twitterBotConfig = builder.Configuration.GetSection(nameof(TwitterBotConfiguration)).Get<TwitterBotConfiguration>();
 var gitHubBotConfig = builder.Configuration.GetSection(nameof(GitHubBotConfiguration)).Get<GitHubBotConfiguration>();
+var discordBotConfig = builder.Configuration.GetSection(nameof(DiscordBotConfiguration)).Get<DiscordBotConfiguration>();
 
 // var watchdogConfig = builder.Configuration.GetSection(nameof(WatchDogConfiguration)).Get<WatchDogConfiguration>();
 
@@ -34,6 +35,7 @@ builder.Services.AddSignalR();
 builder.Services.AddTelegram(telegramBotConfig);
 builder.Services.AddTwitter(twitterBotConfig);
 builder.Services.AddGitHub(gitHubBotConfig);
+builder.Services.AddDiscord(discordBotConfig);
 builder.Services.AddScoped<ChannelWrapper>();
 
 var app = builder.Build();

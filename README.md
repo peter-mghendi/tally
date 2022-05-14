@@ -13,8 +13,8 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 | Telegram             | Yes            | No<sup>2</sup>         | No        | [Telegram Polls](https://telegram.org/blog/polls-2-0-vmq)                              | 10                        | Webhooks, polling          | Native "Stop poll"             | Delete message               |
 | Twitter              | Yes            | Yes                    | No        | [Twitter Polls](https://help.twitter.com/en/using-twitter/twitter-polls)               | 4                         | Polling                    | Timeout                        | Delete tweet                 |
 | GitHub (Discussions) | Yes            | No                     | Yes       | [GitHub Discussions](https://docs.github.com/en/discussions)                           | Infinite                  | Webhooks, GraphQL, polling | Native "Lock conversation"     | Delete discussion            |
-| GitHub (Polls)       | No<sup>3</sup> | ?                      | Yes       | [GitHub Discussion Polls](https://github.blog/changelog/2022-04-12-discussions-polls/) | 8                         | ?                          | ?                              | ?                            |
-| Discord              | No             | ?                      | ?         | ?                                                                                      | ?                         | ?                          | ?                              | ?                            |
+| GitHub (Polls)       | No<sup>3</sup> | ?                      | Yes       | [GitHub Discussion Polls](https://github.blog/changelog/2022-04-12-discussions-polls/) | 8                         | ?                          | Native "Lock conversation"     | Delete discussion            |
+| Discord              | No             | No                     | Yes       | Reaction polls                                                                         | Infinite<sup>4</sup>      | Webhooks, Websockets       | Remove reaction                | Delete message               |
 | Web                  | No             | No                     | Yes       | HTML form                                                                              | Infinite                  | HTML form                  | Disable voting                 | Delete poll                  |
 
 > <sup>1</sup> User-identifiers are collected via some voting channels to identify duplicate votes, and to enable vote editing and deletion. Twitter does not offer any of these features.
@@ -22,6 +22,8 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 > <sup>2</sup> Telegram has an anonymous polls feature which I'm not using because it makes it significantly harder to monitor poll results.
 
 > <sup>3</sup> I'm (mis)using GitHub Discussions for polls because the Discussion Polls feature is not yet available via the API.
+
+> <sup>4</sup> Discord
 
 ## Features
 - [x] Creating polls.
