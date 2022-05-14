@@ -62,8 +62,8 @@ public class TelegramChannel : Channel
         // TODO: Maybe use this result to verify vote totals?
     }
 
-    public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await _botClient.DeleteMessageAsync(_chatId, int.Parse(channelPoll.PrimaryIdentifier), cancellationToken);
     }
 }

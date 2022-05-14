@@ -70,11 +70,19 @@ public class GitHubChannel : Channel
             .Select(payload => new {payload.LockedRecord.Locked})
             .Compile();
         
-        var result = await _connection.Run(mutation, cancellationToken: cancellationToken);
+        _ = await _connection.Run(mutation, cancellationToken: cancellationToken);
     }
 
-    public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var mutation = new Mutation()
+            .DeleteDiscussion(new DeleteDiscussionInput
+            {
+                Id = new ID(channelPoll.PrimaryIdentifier)
+            })
+            .Select(payload => new { payload.Discussion.Id })
+            .Compile();
+
+        _ = await _connection.Run(mutation, cancellationToken: cancellationToken);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Web.Channels;
 using Web.Data;
 using Web.Models;
 
@@ -10,11 +11,13 @@ namespace Web.Pages.Polls;
 [Authorize]
 public class Delete : PageModel
 {
+    private readonly ChannelWrapper _channels;
     private readonly ILogger<Delete> _logger;
     private readonly TallyContext _context;
 
-    public Delete(ILogger<Delete> logger, TallyContext context)
+    public Delete(ChannelWrapper channels, ILogger<Delete> logger, TallyContext context)
     {
+        _channels = channels;
         _logger = logger;
         _context = context;
 
@@ -35,8 +38,19 @@ public class Delete : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        Poll = await _context.Polls.SingleAsync(p => p.Id == Id);
+        Poll = await _context.Polls.Include(p => p.ChannelPolls).SingleAsync(p => p.Id == Id);
         _logger.LogInformation("Deleting poll with id: {Id}", Id);
+        
+        foreach (var channelPoll in Poll.ChannelPolls)
+        {
+            var channel = _channels.Resolve(channelPoll.Channel);
+            await channel.DeletePollAsync(channelPoll);
+        }
+
+        _context.Polls.Remove(Poll);
+        await _context.SaveChangesAsync();
+        
+        // TODO: Flash message
         return RedirectToPage("./Index");
     }
 }

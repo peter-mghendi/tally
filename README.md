@@ -26,13 +26,19 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 ## Features
 - [x] Creating polls.
 - [x] Concluding polls.
-- [ ] Deleting polls.
+- [x] Deleting polls.
 - [x] Voting.
 - [x] Changing votes.
 - [x] Deleting polls.
 - [x] Real-time updates from channels that support it.
 - [x] Automatic results refresh for channels that do not support real-time events. 
 - [x] Real-time result view updates via SignalR.
+- [ ] Home-page feed
+- [ ] Channel selection
+- [ ] Poll configuration
+- [ ] Channel-specific configuration
+- [ ] Poll scheduling.
+- [ ] OAuth Apps
 
 ## Screenshots
 
