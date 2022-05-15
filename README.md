@@ -101,24 +101,13 @@ type .\secrets.json | dotnet user-secrets set
 ```
 4. Run the program
 
-> Moving to TypeScript has complicated the build process a little. 
-> You will now need to ensure TypeScript files are built and bundled before running the app, while I figure out a better way to do this.
-> (Looking into MS Build and npm watch.)
-
-> These commands must be run in exactly this order, because TypeScript compilation is handled by the MS Build pipeline, and bundling is handled by webpack.
+> I use MSBuild to transpile TypeScript and bundle the resultant JS. This process is completely transparent and needs no additional setup.
 
 ```shell
 # Get rid of old built assets (Optional, recommended) 
 dotnet clean 
-npm run clean
 
-# Build new assets
-dotnet build
-npm run build
-```
-Run the app
-
-```shell
+# Build new assets and run the app
 dotnet run
 ```
 

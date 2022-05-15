@@ -7,15 +7,15 @@
         <UserSecretsId>aspnet-Web-7D765E6C-BC34-4156-BD31-6DF741B642FF</UserSecretsId>
     </PropertyGroup>
     
-<!--    <Target Name="AfterBuild">-->
-<!--        <Message Text="Bundling JS" />-->
-<!--        <Exec Command="npm run build" />-->
-<!--    </Target>-->
-<!--    -->
-<!--    <Target Name="AfterClean">-->
-<!--        <Message Text="Cleaning up Generated JS" />-->
-<!--        <RemoveDir Directories="wwwroot/js/polls" />-->
-<!--    </Target>-->
+    <Target Name="BundleJS" AfterTargets="CoreBuild">
+        <Message Text="Bundling JS" />
+        <Exec Command="npm run build" />
+    </Target>
+    
+    <Target Name="CleanJS" AfterTargets="CoreClean">
+        <Message Text="Cleaning up Generated JS" />
+        <RemoveDir Directories="wwwroot/js/polls" />
+    </Target>
 
     <ItemGroup>
         <PackageReference Include="linqtotwitter" Version="6.14.0" />
