@@ -8,14 +8,14 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 ## Implementation Details
 
-| Channel              | Implemented?   | Anonymous?<sup>1</sup> | Editable? | Poll Implementation                                                                    | Maximum number of Options | Voting Implementation      | "Conclude Poll" Implementation | "Delete Poll" Implementation |
-|----------------------|----------------|------------------------|-----------|----------------------------------------------------------------------------------------|---------------------------|----------------------------|--------------------------------|------------------------------|
-| Telegram             | Yes            | No<sup>2</sup>         | No        | [Telegram Polls](https://telegram.org/blog/polls-2-0-vmq)                              | 10                        | Webhooks, polling          | Native "Stop poll"             | Delete message               |
-| Twitter              | Yes            | Yes                    | No        | [Twitter Polls](https://help.twitter.com/en/using-twitter/twitter-polls)               | 4                         | Polling                    | Timeout                        | Delete tweet                 |
-| GitHub (Discussions) | Yes            | No                     | Yes       | [GitHub Discussions](https://docs.github.com/en/discussions)                           | Infinite                  | Webhooks, GraphQL, polling | Native "Lock conversation"     | Delete discussion            |
-| GitHub (Polls)       | No<sup>3</sup> | ?                      | Yes       | [GitHub Discussion Polls](https://github.blog/changelog/2022-04-12-discussions-polls/) | 8                         | ?                          | Native "Lock conversation"     | Delete discussion            |
-| Discord              | No             | No                     | Yes       | Reaction polls                                                                         | Infinite<sup>4</sup>      | Webhooks, Websockets       | Remove reaction                | Delete message               |
-| Web                  | No             | No                     | Yes       | HTML form                                                                              | Infinite                  | HTML form                  | Disable voting                 | Delete poll                  |
+| Channel              | Implemented?   | Anonymous?<sup>1</sup> | Editable? | Poll Implementation                                                                    | Maximum number of Options | Voting Implementation            | "Conclude Poll" Implementation | "Delete Poll" Implementation |
+|----------------------|----------------|------------------------|-----------|----------------------------------------------------------------------------------------|---------------------------|----------------------------------|--------------------------------|------------------------------|
+| Telegram             | Yes            | No<sup>2</sup>         | No        | [Telegram Polls](https://telegram.org/blog/polls-2-0-vmq)                              | 10                        | Webhooks, polling                | Native "Stop poll"             | Delete message               |
+| Twitter              | Yes            | Yes                    | No        | [Twitter Polls](https://help.twitter.com/en/using-twitter/twitter-polls)               | 4                         | Polling                          | Timeout                        | Delete tweet                 |
+| GitHub (Discussions) | Yes            | No                     | Yes       | [GitHub Discussions](https://docs.github.com/en/discussions)                           | Infinite                  | Webhooks, GraphQL, polling       | Native "Lock conversation"     | Delete discussion            |
+| GitHub (Polls)       | No<sup>3</sup> | ?                      | Yes       | [GitHub Discussion Polls](https://github.blog/changelog/2022-04-12-discussions-polls/) | 8                         | ?                                | Native "Lock conversation"     | Delete discussion            |
+| Discord              | No             | No                     | Yes       | Reaction polls                                                                         | Infinite<sup>4</sup>      | Webhooks, websockets<sup>5</sup> | Remove reaction                | Delete message               |
+| Web                  | No             | No                     | Yes       | HTML form                                                                              | Infinite                  | HTML form                        | Disable voting                 | Delete poll                  |
 
 > <sup>1</sup> User-identifiers are collected via some voting channels to identify duplicate votes, and to enable vote editing and deletion. Twitter does not offer any of these features.
 
@@ -23,7 +23,9 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 
 > <sup>3</sup> I'm (mis)using GitHub Discussions for polls because the Discussion Polls feature is not yet available via the API.
 
-> <sup>4</sup> Discord
+> <sup>4</sup> Options in reaction polls are limited by the number of available reactions.
+
+> <sup>5</sup> Discord provides support of outgoing webhooks ([Interactions](https://discord.com/developers/docs/interactions/receiving-and-responding)), but the Interaction URL endpoint must be set manually. The alternative is to maintain a constant websocket connection ([Gateway](https://discord.com/developers/docs/topics/gateway)) to Discord servers.
 
 ## Features
 - [x] Creating polls.
@@ -141,10 +143,12 @@ The table below shows exactly what is stored for each platform.
 
 | Channel              | Primary Identifier   | Auxiliary Identifier |
 |----------------------|----------------------|----------------------|
-| Telegram<sup>1</sup> | Message ID           | Poll Id              |
+| Telegram<sup>1</sup> | Message ID           | Poll ID              |
 | Twitter              | Tweet ID             | Tweet ID             |
 | GitHub               | Discussion Node ID   | Discussion Number    |
-| Discord              | ?                    | ?                    |
+| Discord<sup>2</sup>  | Message ID           | Message ID           |
 | Web                  | Locally Generated ID | Locally Generated ID |
 
-<sup>1</sup> For Telegram, the Chat ID is also stored, to identify the Chat the poll message was sent to.
+> <sup>1</sup> For Telegram, the Chat ID is also stored, to identify the Chat the poll message was sent to.
+
+> <sup>2</sup> Similarly, for Discord, the Server ID and Channel are stored.

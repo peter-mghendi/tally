@@ -21,7 +21,7 @@ public static class ServicesConfiguration
         services.AddScoped<TelegramUpdateService>();
         services.AddScoped<TelegramChannel>();
     }
-    
+
     public static void AddTwitter(this IServiceCollection services, TwitterBotConfiguration twitterBotConfig)
     {
         // LinqToTwitter - Publisher
@@ -47,12 +47,12 @@ public static class ServicesConfiguration
         services.AddHostedService<TwitterUpdateService>();
         services.AddScoped<TwitterChannel>();
     }
-    
+
     public static void AddGitHub(this IServiceCollection services, GitHubBotConfiguration gitHubBotConfig)
     {
         // GraphQL
         services.AddScoped(_ => new Connection(new("Tally", "1.0"), gitHubBotConfig.Token));
-        
+
         // REST
         services.AddScoped(_ => new GitHubClient(new ProductHeaderValue("Tally", "1.0"))
         {
@@ -65,6 +65,10 @@ public static class ServicesConfiguration
 
     public static void AddDiscord(this IServiceCollection services, DiscordBotConfiguration discordBotConfig)
     {
+        services.AddSingleton(_ => discordBotConfig);
+        services.AddScoped<DiscordUpdateService>();
+        services.AddSingleton<DiscordGatewayService>();
+        services.AddHostedService<DiscordGatewayService>();
         services.AddScoped<DiscordChannel>();
     }
 }

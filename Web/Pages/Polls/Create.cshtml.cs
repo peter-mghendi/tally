@@ -56,7 +56,7 @@ public class Create : PageModel
             await _channels[0].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
             await _channels[1].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
             await _channels[2].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            // await _channels[3].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
+            await _channels[3].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text))
         };
 
         await _context.Polls.AddAsync(Poll);
