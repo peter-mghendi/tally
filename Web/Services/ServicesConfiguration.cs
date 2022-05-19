@@ -68,7 +68,7 @@ public static class ServicesConfiguration
         services.AddSingleton(_ => discordBotConfig);
         services.AddScoped<DiscordUpdateService>();
         services.AddSingleton<DiscordGatewayService>();
-        services.AddHostedService<DiscordGatewayService>();
+        services.AddHostedService(provider => provider.GetRequiredService<DiscordGatewayService>());
         services.AddScoped<DiscordChannel>();
     }
 }

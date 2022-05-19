@@ -48,7 +48,7 @@ public class TelegramChannel : Channel
     {
         var query = from option in _tallyContext.Options
             where option.Poll.Id == channelPoll.Poll.Id
-            select new PollResult(option.Id, option.LiveVotes.Count(lv => lv.Channel == PollChannel.Telegram));
+            select new PollResult(option.Id, option.LiveVotes.Count(lv => lv.Channel == PollChannel));
         return LiveResult(await query.ToListAsync(cancellationToken));
     }
 

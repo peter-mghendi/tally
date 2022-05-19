@@ -87,7 +87,7 @@ public sealed class TelegramUpdateService
 
         if (poll.EndedAt is not null)
         {
-            _logger.LogInformation("Discarding Telegram vote for concluded poll: {Poll}", poll.Id);
+            _logger.LogInformation("Discarding Telegram vote for poll {Poll}: Poll has concluded.", poll.Id);
             return;
         }
         

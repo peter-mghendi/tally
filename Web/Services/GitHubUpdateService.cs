@@ -43,8 +43,8 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
         const string edited = nameof(edited);
         const string deleted = nameof(deleted);
 
-        using var scope = _services.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
+        var scope = _services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
         var channel = scope.ServiceProvider.GetRequiredService<GitHubChannel>();
 
         var identifier = discussionCommentEvent.Discussion.NodeId;
@@ -58,7 +58,7 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
 
         if (poll.EndedAt is not null)
         {
-            _logger.LogInformation("Discarding GitHub vote for concluded poll: {Poll}", poll.Id);
+            _logger.LogInformation("Discarding GitHub vote for poll {Poll}: Poll has concluded.", poll.Id);
         }
         
         var userIdentifier = discussionCommentEvent.Comment.User.Id.ToString();
@@ -71,13 +71,13 @@ public sealed class GitHubUpdateService : WebhookEventProcessor
             var body = discussionCommentEvent.Comment.Body.Trim();
             if (!int.TryParse(discussionCommentEvent.Comment.Body, out optionIndex))
             {
-                _logger.LogInformation("Discarding vote: Vote body {Body} not a valid index", body);
+                _logger.LogInformation("Discarding GitHub vote for poll {Poll}: Vote body {Body} not a valid index", poll.Id, body);
                 return;
             }
 
             if (optionIndex < 0 || optionIndex >= poll.Options.Count)
             {
-                _logger.LogInformation("Discarding vote: Index {Index} outside required range.", optionIndex);
+                _logger.LogInformation("Discarding GitHub vote for poll {Poll}: Index {Index} outside required range.", poll.Id, optionIndex);
                 return;
             }
         }

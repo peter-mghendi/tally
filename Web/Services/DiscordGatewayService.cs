@@ -14,11 +14,11 @@ public sealed class DiscordGatewayService : IHostedService, IAsyncDisposable
 
     public DiscordGatewayService(
         DiscordBotConfiguration discordBotConfig,
-        IServiceScopeFactory serviceScopeFactory,
+        IServiceScopeFactory services,
         ILogger<DiscordGatewayService> logger
     )
     {
-        using var scope = serviceScopeFactory.CreateScope();
+        var scope = services.CreateScope();
         _updateService = scope.ServiceProvider.GetRequiredService<DiscordUpdateService>();
         _lazyClient = new Lazy<Task<DiscordSocketClient>>(async () =>
         {

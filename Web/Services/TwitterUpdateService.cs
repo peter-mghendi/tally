@@ -29,7 +29,7 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting Twitter update service.");
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+        // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
         return Task.CompletedTask;
     }
 
@@ -37,12 +37,12 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
     {
         try
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            await using var tallyContext = scope.ServiceProvider.GetRequiredService<TallyContext>();
+            var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
             var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();
             var channel = scope.ServiceProvider.GetRequiredService<TwitterChannel>();
 
-            var channelPolls = await tallyContext.ChannelPolls
+            var channelPolls = await context.ChannelPolls
                 .Include(cp => cp.Poll)
                 .ThenInclude(p => p.Options)
                 .Where(p => p.Channel == PollChannel.Twitter)
@@ -56,7 +56,7 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
 
                 if (poll.EndedAt is not null)
                 {
-                    _logger.LogInformation("Skipping Twitter update for concluded poll: {Poll}", poll.Id);
+                    _logger.LogInformation("Skipping Twitter update for poll {Poll}: Poll has concluded.", poll.Id);
                     continue;
                 }
                 
@@ -72,13 +72,13 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
                 });
 
                 var currentCache =
-                    tallyContext.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
-                tallyContext.CachedVotes.RemoveRange(currentCache);
+                    context.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
+                context.CachedVotes.RemoveRange(currentCache);
 
-                await tallyContext.CachedVotes.AddRangeAsync(voteCounts);
+                await context.CachedVotes.AddRangeAsync(voteCounts);
             }
 
-            await tallyContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
             foreach (var channelPoll in channelPolls)
             {
                 var poll = channelPoll.Poll;

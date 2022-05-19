@@ -24,7 +24,7 @@ public sealed class GitHubWebHookService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
         var client = scope.ServiceProvider.GetRequiredService<GitHubClient>();
 
         // Configure custom endpoint per Telegram API recommendations:
@@ -46,7 +46,7 @@ public sealed class GitHubWebHookService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
         var client = scope.ServiceProvider.GetRequiredService<GitHubClient>();
 
         // Remove webhook upon app shutdown

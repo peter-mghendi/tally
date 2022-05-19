@@ -23,7 +23,7 @@ public sealed class TelegramWebhookService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         // Configure custom endpoint per Telegram API recommendations:
@@ -37,7 +37,7 @@ public sealed class TelegramWebhookService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        using var scope = _services.CreateScope();
+        var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         // Remove webhook upon app shutdown
