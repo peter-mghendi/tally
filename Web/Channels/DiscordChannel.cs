@@ -50,8 +50,8 @@ public class DiscordChannel : Channel
         return Task.CompletedTask;
     }
 
-    public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
+    public override async Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await _adapter.DeletePollAsync(ulong.Parse(channelPoll.PrimaryIdentifier));
     }
 }

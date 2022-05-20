@@ -40,6 +40,22 @@ public class DiscordAdapter : IAsyncDisposable
         return await channel.SendMessageAsync(text: text);
     }
     
+    public async Task DeletePollAsync(ulong messageId)
+    {
+        var client = await LazyClient.Value;
+        _logger.LogInformation("Creating poll. Client connection state: {Value}", client.ConnectionState);
+
+        var guild = await client.Rest.GetGuildAsync(_discordBotConfig.ServerId);
+        if (guild is null) throw new Exception("Guild is null");
+        _logger.LogInformation("Guild name: {Name}", guild.Name);
+        
+        var channel = await guild.GetTextChannelAsync(_discordBotConfig.ChannelId);
+        if (channel is null) throw new Exception("Channel is null");
+        _logger.LogInformation("Channel name: {Name}", channel.Name);
+
+        await channel.DeleteMessageAsync(messageId: messageId);
+    }
+    
     public async ValueTask DisposeAsync()
     {
         _logger.LogInformation("Disposing Discord Gateway Service.");
