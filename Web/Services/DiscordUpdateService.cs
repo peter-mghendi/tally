@@ -104,7 +104,8 @@ public class DiscordUpdateService
     )
     {
         var emote = reaction.Emote;
-        var userIdentifier = reaction.UserId.ToString();
+        var userId = reaction.UserId;
+        var userIdentifier = userId.ToString();
         var pollIdentifier = reaction.MessageId.ToString();
         var optionIndex = _allowedEmoji.FindIndex(e => e.Name == emote.Name);
 
@@ -117,6 +118,12 @@ public class DiscordUpdateService
             .SingleAsync(cp => cp.PrimaryIdentifier == pollIdentifier && cp.Channel == PollChannel.Discord);
         var poll = channelPoll.Poll;
         var optionId = poll.Options[optionIndex].Id;
+
+        if (poll.EndedAt is not null)
+        {
+            _logger.LogInformation("Discarding Discord vote for poll {Poll}: Poll has concluded.", poll.Id);
+            await message.Value.RemoveReactionAsync(emote, userId);
+        }
 
         _logger.LogInformation("Received Discord vote removal for poll: {Poll}", 0);
 

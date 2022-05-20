@@ -9,13 +9,15 @@ namespace Web.Channels;
 public class DiscordChannel : Channel
 {
     private readonly DiscordAdapter _adapter;
+    private readonly ILogger<DiscordChannel> _logger;
     private readonly TallyContext _tallyContext;
     
     private readonly string[] _reactions = {":one:", ":two:", ":three:", ":four:"};
     
-    public DiscordChannel(DiscordAdapter adapter, TallyContext tallyContext)
+    public DiscordChannel(DiscordAdapter adapter, ILogger<DiscordChannel> logger, TallyContext tallyContext)
     {
         _adapter = adapter;
+        _logger = logger;
         _tallyContext = tallyContext;
     }
     
@@ -44,7 +46,8 @@ public class DiscordChannel : Channel
 
     public override Task ConcludePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Attempting to conclude Discord poll (Message ID: {Message}), which cannot be manually concluded.", channelPoll.PrimaryIdentifier);
+        return Task.CompletedTask;
     }
 
     public override Task DeletePollAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
