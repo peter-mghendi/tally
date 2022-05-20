@@ -8,14 +8,14 @@ namespace Web.Channels;
 
 public class DiscordChannel : Channel
 {
-    private readonly DiscordGatewayService _gatewayService;
+    private readonly DiscordAdapter _adapter;
     private readonly TallyContext _tallyContext;
     
     private readonly string[] _reactions = {":one:", ":two:", ":three:", ":four:"};
     
-    public DiscordChannel(DiscordGatewayService gatewayService, TallyContext tallyContext)
+    public DiscordChannel(DiscordAdapter adapter, TallyContext tallyContext)
     {
-        _gatewayService = gatewayService;
+        _adapter = adapter;
         _tallyContext = tallyContext;
     }
     
@@ -29,7 +29,7 @@ public class DiscordChannel : Channel
             textBuilder.Append($"{_reactions[i]} {enumerable.ElementAt(i)}\n");
         }
 
-        var message = await _gatewayService.CreatePollAsync(text: textBuilder.ToString());
+        var message = await _adapter.CreatePollAsync(text: textBuilder.ToString());
         var identifier = message.Id.ToString();
         return BuildPoll(identifier, identifier);
     }
