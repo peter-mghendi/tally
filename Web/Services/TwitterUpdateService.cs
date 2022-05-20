@@ -8,12 +8,11 @@ using Web.Models;
 
 namespace Web.Services;
 
-public sealed class TwitterUpdateService : IHostedService, IDisposable
+public sealed class TwitterUpdateService : BackgroundService
 {
     private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
     private readonly ILogger<TwitterUpdateService> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private Timer? _timer;
 
     public TwitterUpdateService(
         IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
@@ -26,14 +25,20 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting Twitter update service.");
-        // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
-        return Task.CompletedTask;
+        
+        // HACK: Run the first update operation manually, because the timer does not.
+        await TryUpdateAsync(cancellationToken);
+        
+        var timer = new PeriodicTimer(TimeSpan.FromMinutes(30));
+        while (await timer.WaitForNextTickAsync(cancellationToken)) await TryUpdateAsync(cancellationToken);
+        
+        _logger.LogInformation("Stopping Twitter update service.");
     }
-
-    private async void DoWork(object? state)
+    
+    private async Task TryUpdateAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -45,23 +50,22 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
             var channelPolls = await context.ChannelPolls
                 .Include(cp => cp.Poll)
                 .ThenInclude(p => p.Options)
-                .Where(p => p.Channel == PollChannel.Twitter)
-                .ToListAsync();
+                .Where(p => p.Channel == PollChannel.Twitter && p.Poll.EndedAt == null)
+                .ToListAsync(cancellationToken: cancellationToken);
 
-            _logger.LogInformation("Found {Count} polls with twitter channels.", channelPolls.Count);
+            if (channelPolls.Count <= 0) return; // Nothing to see here.
+            
+            _logger.LogInformation("Found {Count} ongoing polls with twitter channels.", channelPolls.Count);
 
-            foreach (var channelPoll in channelPolls)
+            var tweetIds = channelPolls.Select(p => p.PrimaryIdentifier).ToArray();
+            var tweetResponse = await twitterClient.TweetsV2.GetTweetsAsync(tweetIds);
+            var tweets = tweetResponse.Tweets;
+
+            for (var i = 0; i < tweets.Length; i++)
             {
-                var poll = channelPoll.Poll;
-
-                if (poll.EndedAt is not null)
-                {
-                    _logger.LogInformation("Skipping Twitter update for poll {Poll}: Poll has concluded.", poll.Id);
-                    continue;
-                }
-                
-                var tweet = await twitterClient.TweetsV2.GetTweetAsync(channelPoll.PrimaryIdentifier);
-                var tweetPollOptions = tweet.Includes.Polls[0].PollOptions;
+                var tweetPoll = tweetResponse.Includes.Polls[i];
+                var tweetPollOptions = tweetPoll.PollOptions;
+                var poll = channelPolls[i].Poll;
 
                 var voteCounts = poll.Options.Select((option, index) => new CachedVote
                 {
@@ -75,29 +79,20 @@ public sealed class TwitterUpdateService : IHostedService, IDisposable
                     context.CachedVotes.Where(cv => cv.Channel == PollChannel.Twitter && cv.Poll.Id == poll.Id);
                 context.CachedVotes.RemoveRange(currentCache);
 
-                await context.CachedVotes.AddRangeAsync(voteCounts);
+                await context.CachedVotes.AddRangeAsync(voteCounts, cancellationToken);
             }
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
             foreach (var channelPoll in channelPolls)
             {
                 var poll = channelPoll.Poll;
                 await _hubContext.Clients.Group(poll.Id.ToString())
-                    .UpdateResult(nameof(PollChannel.Twitter), await channel.CountVotesAsync(channelPoll));
+                    .UpdateResult(nameof(PollChannel.Twitter), await channel.CountVotesAsync(channelPoll, cancellationToken));
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            _logger.LogInformation("Twitter update failed at {DateTime}.", DateTime.Now);
+            _logger.LogInformation("Twitter update failed at {DateTime}: {Message}.", DateTime.Now, exception.Message);
         }
     }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Stopping Twitter update service.");
-        _timer?.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
-    }
-
-    public void Dispose() => _timer?.Dispose();
 }
