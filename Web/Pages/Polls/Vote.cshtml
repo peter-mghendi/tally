@@ -1,0 +1,54 @@
+@page "/polls/{id:int}/vote"
+@using Web.Models
+@model Web.Pages.Polls.Vote
+
+@{
+    ViewData["Title"] = "Vote";
+
+    var colors = new Dictionary<PollChannel, string>
+    {
+        [PollChannel.Telegram] = "#229ED9",
+        [PollChannel.Twitter] = "#1DA1F2",
+        [PollChannel.GitHub] = "#171515",
+        [PollChannel.Discord] = "#5865F2",
+    };
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.Poll.EndedAt is not null)
+{
+    <h3>Sorry, this poll has concluded.</h3>
+}
+else if (Model.Poll.ChannelPolls.All(cp => cp.Channel != PollChannel.Web))
+{
+    <h3 class="text-center mb-3">Sorry, this poll is not viewable on the web.</h3>    
+    
+    <p class="lead text-center mb-3">It is, however, available on this channels:</p>
+}
+else
+{
+    <h3 class="text-center mb-3">@Model.Poll.Question</h3>
+
+    <p class="text-center lead mb-3">Select one of the options below to vote:</p>
+
+    <div class="d-flex flex-column mb-3 align-items-center">
+        @foreach (var option in Model.Poll.Options)
+        {
+            <div>
+                <button class="btn btn-outline-info mb-2">@option.Text</button>
+            </div>
+        }
+    </div>
+
+    <p class="lead text-center mb-3">View this poll also on:</p>   
+}
+
+<div class="d-flex justify-content-center">
+@foreach (var channelPoll in Model.Poll.ChannelPolls)
+{
+    <a href="#" class="fs-1 mx-2" style="color: @colors[channelPoll.Channel]">
+        <i class="bi bi-@channelPoll.Channel.ToString().ToLower()"></i>
+    </a>
+}
+</div>

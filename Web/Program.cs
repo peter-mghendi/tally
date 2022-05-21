@@ -36,7 +36,14 @@ builder.Services.AddTelegram(telegramBotConfig);
 builder.Services.AddTwitter(twitterBotConfig);
 builder.Services.AddGitHub(gitHubBotConfig);
 builder.Services.AddDiscord(discordBotConfig);
+builder.Services.AddWeb();
 builder.Services.AddScoped<ChannelWrapper>();
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 
 var app = builder.Build();
 

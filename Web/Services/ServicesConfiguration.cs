@@ -71,4 +71,9 @@ public static class ServicesConfiguration
         services.AddHostedService<DiscordGatewayService>();
         services.AddScoped<DiscordChannel>();
     }
+
+    public static void AddWeb(this IServiceCollection services)
+    {
+        services.AddScoped<WebChannel>();
+    }
 }

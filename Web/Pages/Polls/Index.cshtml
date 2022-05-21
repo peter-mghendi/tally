@@ -1,8 +1,18 @@
 @page
+@using Web.Models
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model Web.Pages.Polls.Index
 
 @{
     ViewData["Title"] = "Polls";
+    
+    var colors = new Dictionary<PollChannel, string>
+    {
+        [PollChannel.Telegram] = "#229ED9",
+        [PollChannel.Twitter] = "#1DA1F2",
+        [PollChannel.GitHub] = "#171515",
+        [PollChannel.Discord] = "#5865F2",
+    };
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -11,7 +21,7 @@
     <a asp-page="Create" class="btn btn-outline-primary" role="button">Create New</a>
 </p>
 
-<table class="table">
+<table class="table table-borderless table-hover">
     <thead>
     <tr>
         <th>
@@ -43,7 +53,17 @@
                 @Html.DisplayFor(modelItem => item.Question)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ChannelPolls.Count)
+                @foreach (var channelPoll in item.ChannelPolls)
+                {
+                    @if (channelPoll.Channel == PollChannel.Web)
+                    {
+                        <i class="bi bi-globe fs-6 mr-2"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-@channelPoll.Channel.ToString().ToLower() fs-6 mr-2" style="color: @colors[channelPoll.Channel]"></i>
+                    }
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.StartedAt)
@@ -52,6 +72,7 @@
                 @Html.DisplayFor(modelItem => item.EndedAt)
             </td>
             <td>
+                <a asp-page="./Vote" asp-route-id="@item.Id">Vote</a> |
                 <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
             </td>

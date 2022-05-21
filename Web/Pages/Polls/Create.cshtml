@@ -14,7 +14,7 @@
         <form method="post" id="pollForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="row">
-                <div class="col-12 col-sm-8 col-md-6">
+                <div class="col-12 col-sm-8 col-md-6 mb-3">
                     <fieldset>
                         <legend>General Information</legend>
                         <div class="form-floating mb-3">
@@ -24,7 +24,7 @@
                         </div>
                         @for (var i = 1; i <= 4; i++)
                         {
-                            <div class="form-floating mb-3">
+                            <div class="form-floating @(i < 4 ? "mb-3" : null)">
                                 <input asp-for="Poll.Options[i - 1].Text" class="form-control" placeholder="Option @i"/>
                                 <label asp-for="Poll.Options[i - 1].Text">Option @i</label>
                                 <span asp-validation-for="Poll.Options[i - 1].Text" class="text-danger"></span>
@@ -32,64 +32,67 @@
                         }
                     </fieldset>
                 </div>
-                <div class="col-12 col-sm-8 col-md-6">
+                <div class="col-12 col-sm-8 col-md-6 mb-3">
                     <fieldset>
                         <legend>Poll Channels</legend>
-                        <div class="row align-items-center">
-                            <div class="col-3">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="channel-telegram">
-                                    <label class="form-check-label" for="channel-telegram">Telegram</label>
-                                </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3"
+                             style="padding-top: 0.62rem!important; padding-bottom: .62rem!important;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channel-telegram">
+                                <label class="form-check-label" for="channel-telegram">Telegram</label>
                             </div>
-                            <div class="col-9">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="telegram-chat-id" placeholder="0000"/>
-                                    <label for="telegram-chat-id">Telegram Chat ID</label>
-                                </div>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="bi bi-gear"></i> Configure
+                                </button>
                             </div>
                         </div>
-                        <div class="row align-items-center">
-                            <div class="col-3">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="channel-twitter">
-                                    <label class="form-check-label" for="channel-twitter">Twitter</label>
-                                </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3"
+                             style="padding-top: 0.62rem!important; padding-bottom: .62rem!important;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channel-twitter">
+                                <label class="form-check-label" for="channel-twitter">Twitter</label>
                             </div>
-                            <div class="col-9">
-                                <div class="form-floating mb-3">
-                                    <input type="datetime-local" class="form-control" id="twitter-duration"
-                                           min="@DateTime.Now.ToString("s")" max="@DateTime.Now.AddDays(7).ToString("s")"/>
-                                    <label for="twitter-duration">Twitter Duration</label>
-                                </div>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="bi bi-gear"></i> Configure
+                                </button>
                             </div>
                         </div>
-                        <div class="row align-items-center">
-                            <div class="col-3">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="channel-github">
-                                    <label class="form-check-label" for="channel-github">GitHub</label>
-                                </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3"
+                             style="padding-top: 0.62rem!important; padding-bottom: .62rem!important;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channel-github">
+                                <label class="form-check-label" for="channel-github">GitHub</label>
                             </div>
-                            <div class="col-9">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="github-category-id" placeholder="0000"/>
-                                    <label for="github-category-id">GitHub Category ID</label>
-                                </div>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="bi bi-gear"></i> Configure
+                                </button>
                             </div>
                         </div>
-                        <div class="row align-items-center">
-                            <div class="col-3">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="channel-discord">
-                                    <label class="form-check-label" for="channel-discord">Discord</label>
-                                </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3"
+                             style="padding-top: 0.62rem!important; padding-bottom: .62rem!important;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channel-discord">
+                                <label class="form-check-label" for="channel-discord">Discord</label>
                             </div>
-                            <div class="col-9">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="discord-channel-id" placeholder="0000"/>
-                                    <label for="discord-channel-id">Discord Channel ID</label>
-                                </div>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="bi bi-gear"></i> Configure
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between"
+                             style="padding-top: 0.62rem!important; padding-bottom: .62rem!important;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channel-web">
+                                <label class="form-check-label" for="channel-web">Web</label>
+                            </div>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="bi bi-gear"></i> Configure
+                                </button>
                             </div>
                         </div>
                     </fieldset>
@@ -103,8 +106,6 @@
             <div class="col">
                 <input type="submit" form="pollForm" value="Create" class="btn btn-outline-primary w-100"/>
             </div>
-
-
         </div>
     </div>
 </div>
