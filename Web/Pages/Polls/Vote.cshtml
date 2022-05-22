@@ -1,4 +1,8 @@
 @page "/polls/{id:int}/vote"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
 @using Web.Models
 @model Web.Pages.Polls.Vote
 
@@ -22,8 +26,8 @@
 }
 else if (Model.Poll.ChannelPolls.All(cp => cp.Channel != PollChannel.Web))
 {
-    <h3 class="text-center mb-3">Sorry, this poll is not viewable on the web.</h3>    
-    
+    <h3 class="text-center mb-3">Sorry, this poll is not viewable on the web.</h3>
+
     <p class="lead text-center mb-3">It is, however, available on this channels:</p>
 }
 else
@@ -32,23 +36,78 @@ else
 
     <p class="text-center lead mb-3">Select one of the options below to vote:</p>
 
-    <div class="d-flex flex-column mb-3 align-items-center">
-        @foreach (var option in Model.Poll.Options)
+    @* <div class="d-flex flex-column mb-3 align-items-center w-50" x-data="vote"> *@
+    <div class="d-grid gap-2 mb-4" x-data="vote">
+        @for (var i = 0; i < Model.Poll.Options.Count; i++)
         {
-            <div>
-                <button class="btn btn-outline-info mb-2">@option.Text</button>
-            </div>
+            var option = Model.Poll.Options[i];
+
+            <template x-if="viewResults || chosen != null">
+                <button class="btn btn-outline-info p-0" disabled="disabled">
+                    <div class="progress" style="height: 2.2rem">
+                        <div class="progress-bar bg-info fs-6" role="progressbar" :style="{ width: `${results[@i]}%` }"
+                             :aria-valuenow="results[@i]" aria-valuemin="0" aria-valuemax="100" x-text="`${results[@i]}%`">
+                        </div>
+                    </div>
+                </button>
+            </template>
+
+            <template x-if="!viewResults && chosen == null">
+                <button class="btn btn-outline-info" @@click="vote(@option.Id)" :disabled="chosen !== null">
+                    <span>@option.Text</span>
+                </button>
+            </template>
         }
+
+        <template x-if="chosen !== null">
+            <button class="btn btn-outline-warning" @@click="retract" :disabled="chosen === null">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                Retract vote
+            </button>
+        </template>
+
+        <template x-if="chosen === null && !viewResults">
+            <button class="btn btn-outline-info" @@click="viewResults = true" :disabled="viewResults || chosen !== null">
+                <span>
+                    <i class="bi bi-bar-chart-line-fill me-2"></i>
+                    View results
+                </span>
+            </button>
+        </template>
+
+        <template x-if="chosen === null && viewResults">
+            <button class="btn btn-outline-info" @@click="viewResults = false" :disabled="!viewResults && chosen === null">
+                <span>
+                    <i class="bi bi-list-ol me-2"></i>
+                    View options
+                </span>
+            </button>
+        </template>
     </div>
 
-    <p class="lead text-center mb-3">View this poll also on:</p>   
+    <p class="lead text-center mb-3">View this poll also on:</p>
 }
 
 <div class="d-flex justify-content-center">
-@foreach (var channelPoll in Model.Poll.ChannelPolls)
-{
-    <a href="#" class="fs-1 mx-2" style="color: @colors[channelPoll.Channel]">
-        <i class="bi bi-@channelPoll.Channel.ToString().ToLower()"></i>
-    </a>
-}
+    @foreach (var channelPoll in Model.Poll.ChannelPolls)
+    {
+        @if (channelPoll.Channel == PollChannel.Web)
+        {
+            continue;
+        }
+
+        <a href="#" class="fs-1 mx-2" style="color: @colors[channelPoll.Channel]">
+            <i class="bi bi-@channelPoll.Channel.ToString().ToLower()"></i>
+        </a>
+    }
 </div>
+
+@section Scripts {
+    <script>    
+        const pollId = @Model.Poll.Id;
+        const chosen = @Json.Serialize(Model.Chosen);
+        const ongoing = @Json.Serialize(Model.Poll.EndedAt == null);
+        const initialResults = @Json.Serialize(Model.Results);
+    </script>
+    <script src="~/js/polls/vote.g.js"></script>
+}

@@ -40,6 +40,7 @@
 
     <ItemGroup>
         <TypeScriptCompile Include="Resources\Scripts\polls\details.ts" />
+        <TypeScriptCompile Include="Resources\scripts\polls\vote.ts" />
     </ItemGroup>
 
     <ItemGroup>

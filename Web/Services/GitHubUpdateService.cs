@@ -12,12 +12,12 @@ namespace Web.Services;
 
 public sealed class GitHubUpdateService : WebhookEventProcessor
 {
-    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
+    private readonly IHubContext<TallyHub, TallyHub.IClient> _hubContext;
     private readonly ILogger<GitHubUpdateService> _logger;
     private readonly IServiceProvider _services;
 
     public GitHubUpdateService(
-        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        IHubContext<TallyHub, TallyHub.IClient> hubContext,
         ILogger<GitHubUpdateService> logger,
         IServiceProvider services
     )

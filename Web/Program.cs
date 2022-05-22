@@ -82,5 +82,6 @@ app.UseEndpoints(endpoints =>
 });
 app.MapRazorPages();
 app.MapHub<TallyHub>("/tally");
+app.MapHub<WebHub>("/web");
 
 app.Run();

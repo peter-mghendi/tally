@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Web.Channels;
@@ -6,7 +7,8 @@ using Web.Models;
 
 namespace Web.Hubs;
 
-public class TallyHub : Hub<TallyHub.ITallyHubClient>
+[Authorize]
+public class TallyHub : Hub<TallyHub.IClient>
 {
     private readonly ChannelWrapper _channels;
     private readonly TallyContext _context;
@@ -17,7 +19,7 @@ public class TallyHub : Hub<TallyHub.ITallyHubClient>
         _context = context;
     }
 
-    public interface ITallyHubClient
+    public interface IClient
     {
         public Task AcknowledgeSubscription(int pollId);
         public Task UpdateResults(Dictionary<string, ChannelResult> results);

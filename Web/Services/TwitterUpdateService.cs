@@ -10,12 +10,12 @@ namespace Web.Services;
 
 public sealed class TwitterUpdateService : BackgroundService
 {
-    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
+    private readonly IHubContext<TallyHub, TallyHub.IClient> _hubContext;
     private readonly ILogger<TwitterUpdateService> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public TwitterUpdateService(
-        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        IHubContext<TallyHub, TallyHub.IClient> hubContext,
         ILogger<TwitterUpdateService> logger,
         IServiceScopeFactory serviceScopeFactory
     )

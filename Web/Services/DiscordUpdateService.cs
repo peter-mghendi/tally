@@ -12,7 +12,7 @@ namespace Web.Services;
 public class DiscordUpdateService
 {
     private readonly DiscordChannel _channel;
-    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
+    private readonly IHubContext<TallyHub, TallyHub.IClient> _hubContext;
     private readonly ILogger<DiscordUpdateService> _logger;
     private readonly TallyContext _context;
 
@@ -26,7 +26,7 @@ public class DiscordUpdateService
 
     public DiscordUpdateService(
         DiscordChannel channel,
-        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        IHubContext<TallyHub, TallyHub.IClient> hubContext,
         ILogger<DiscordUpdateService> logger,
         TallyContext context
     )

@@ -15,7 +15,7 @@ public static class ServicesConfiguration
 {
     public static void AddTelegram(this IServiceCollection services, TelegramBotConfiguration telegramBotConfig)
     {
-        services.AddHttpClient("tgwebhook")
+        services.AddHttpClient("TelegramWebhook")
             .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(telegramBotConfig.BotToken, client));
         services.AddHostedService<TelegramWebhookService>();
         services.AddScoped<TelegramUpdateService>();

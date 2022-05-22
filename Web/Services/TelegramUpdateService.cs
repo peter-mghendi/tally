@@ -14,14 +14,14 @@ namespace Web.Services;
 
 public sealed class TelegramUpdateService
 {
-    private readonly IHubContext<TallyHub, TallyHub.ITallyHubClient> _hubContext;
+    private readonly IHubContext<TallyHub, TallyHub.IClient> _hubContext;
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<TelegramUpdateService> _logger;
     private readonly TallyContext _context;
     private readonly TelegramChannel _channel;
 
     public TelegramUpdateService(
-        IHubContext<TallyHub, TallyHub.ITallyHubClient> hubContext,
+        IHubContext<TallyHub, TallyHub.IClient> hubContext,
         ITelegramBotClient botClient,
         ILogger<TelegramUpdateService> logger,
         TallyContext context,

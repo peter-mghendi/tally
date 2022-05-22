@@ -2,7 +2,8 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        details: './wwwroot/js/polls/details.js'
+        details: './wwwroot/js/polls/details.js',
+        vote: './wwwroot/js/polls/vote.js'
     },
     output: {
         filename: '[name].g.js',
