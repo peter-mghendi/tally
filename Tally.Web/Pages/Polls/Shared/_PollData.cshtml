@@ -1,0 +1,44 @@
+@model Tally.Web.Models.Poll
+
+<dl>
+    <div class="row mb-2">
+        <dt class="col-4">
+            @Html.DisplayNameFor(model => model.Question)
+        </dt>
+        <dd class="col-8">
+            @Html.DisplayFor(model => model.Question)
+        </dd>
+    </div>
+    <div class="row mb-2">
+        <dt class="col-4">
+            @Html.DisplayNameFor(model => model.ChannelPolls)
+        </dt>
+        <dd class="col-8">
+            @Html.DisplayFor(model => model.ChannelPolls.Count)
+        </dd>
+    </div>
+    <div class="row mb-2">
+        <dt class="col-4">
+            @Html.DisplayNameFor(model => model.StartedAt)
+        </dt>
+        <dd class="col-8">
+            @Html.DisplayFor(model => model.StartedAt)
+        </dd>
+    </div>
+    <div class="row mb-2">
+        <dt class="col-4">
+            @Html.DisplayNameFor(model => model.EndedAt)
+        </dt>
+        <dd class="col-8">
+            @Html.DisplayFor(model => model.EndedAt)
+        </dd>
+    </div>
+    <div class="row mb-2">
+        <dt class="col-4">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-8">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+    </div>
+</dl>

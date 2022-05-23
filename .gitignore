@@ -457,8 +457,8 @@ $RECYCLE.BIN/
 secrets.json
 
 # WatchDog
-Web/watchlogs.db
-Web/watchlogs-log.db
+Tally.Web/watchlogs.db
+Tally.Web/watchlogs-log.db
 
 # Generated JS
-Web/wwwroot/js/polls/
+Tally.Web/wwwroot/js/polls/
