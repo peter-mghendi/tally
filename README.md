@@ -37,12 +37,12 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 - [x] Real-time updates from channels that support it.
 - [x] Automatic results refresh for channels that do not support real-time events. 
 - [x] Real-time result view updates via SignalR.
-- [ ] Home-page feed
-- [ ] Channel selection
-- [ ] Poll configuration
-- [ ] Channel-specific configuration
+- [x] Home-page feed.
+- [ ] Channel selection.
+- [ ] Poll configuration.
+- [ ] Channel-specific configuration.
 - [ ] Poll scheduling.
-- [ ] OAuth Apps
+- [ ] OAuth Apps.
 
 ## Screenshots
 
@@ -55,6 +55,7 @@ Concluding the poll blocks additional results from coming in, and deleting the p
 0. Prerequisites
 - Git
 - [.NET 6 SDK](https://get.dot.net/6) (Set up for local HTTPS development).
+- npm 
 - Ngrok
 - All applicable credentials (see [appsettings.json](https://github.com/sixpeteunder/tally/tree/main/Web/appsetings.json)).
 
@@ -83,6 +84,7 @@ ngrok http https://localhost:8443
 
 3. Using your favourite editor, fill required credentials in secrets.json, and host (ngrok) address in appsettings.json:
 
+> **Note**
 > The default values provided in `secrets.sample.json` are fake sample credentials representing what each field expects.
 
 Tally uses the [.NET Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) tool to manage secrets during development. To get started, make a copy of secrets.sample.json, populate it with the required secrets, and then persist them to Secret Manager.
@@ -105,7 +107,7 @@ type .\secrets.json | dotnet user-secrets set
 4. Run the program
 
 > **Note**
-> I use MSBuild to transpile TypeScript and bundle the resultant JS. This process is completely transparent and needs no additional setup.
+> This project makes use of MSBuild and npm to transpile TypeScript and bundle the resultant JS. This process is completely transparent and needs no additional setup.
 > See [TypeScript](#typescript) below for more information.
 
 ```shell
@@ -130,6 +132,7 @@ start https://localhost:8443
 
 ## Webhooks and websockets
 
+> **Note**
 > The application logs relevant webhook events, but GitHub and [webhook.site](https://webhook.site) also provide excellent tooling for testing webhooks.
 
 > I also use [WatchDog](https://nuget.org/packages/WatchDog.NET) to monitor HTTP activity. The dashboard is accessible at https://localhost:8443/watchdog.
@@ -144,6 +147,7 @@ The web channel also uses websockets, via [SignalR](https://dotnet.microsoft.com
 
 Tally stores a pair of "Channel Poll Identifiers" for each poll on each channel, that allows it to find and manage the linked poll.
 
+> **Note**
 > A "Primary" and "Auxiliary" identifier is stored for each channel because the relevant APIs sometimes require different identifiers for different actions.
 
 The table below shows exactly what is stored for each platform.
