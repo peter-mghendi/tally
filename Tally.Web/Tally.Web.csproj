@@ -20,7 +20,7 @@
     <ItemGroup>
         <PackageReference Include="Discord.Net" Version="3.6.1" />
         <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-        <PackageReference Include="linqtotwitter" Version="6.14.0" />
+        <PackageReference Include="linqtotwitter" Version="6.15.0" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.2" />
@@ -35,7 +35,7 @@
         <PackageReference Include="Octokit.GraphQL" Version="0.1.8-beta" />
         <PackageReference Include="Octokit.Webhooks.AspNetCore" Version="0.6.5" />
         <PackageReference Include="Telegram.Bot" Version="17.0.0" />
-        <PackageReference Include="TweetinviAPI" Version="5.0.4" />
+<!--        <PackageReference Include="TweetinviAPI" Version="5.0.4" />-->
         <PackageReference Include="WatchDog.NET" Version="1.1.0" />
     </ItemGroup>
 

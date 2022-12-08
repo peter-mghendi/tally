@@ -5,8 +5,6 @@ using Octokit.Webhooks;
 using Tally.Web.Channels;
 using Tally.Web.Models.Configuration;
 using Telegram.Bot;
-using Tweetinvi;
-using Tweetinvi.Models;
 using Connection = Octokit.GraphQL.Connection;
 
 namespace Tally.Web.Services;
@@ -37,12 +35,12 @@ public static class ServicesConfiguration
         }));
 
         // Tweetinvi - Consumer
-        services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
-            twitterBotConfig.ConsumerKey,
-            twitterBotConfig.ConsumerSecret,
-            twitterBotConfig.AccessToken,
-            twitterBotConfig.AccessTokenSecret
-        )));
+        // services.AddScoped(_ => new TwitterClient(new TwitterCredentials(
+        //     twitterBotConfig.ConsumerKey,
+        //     twitterBotConfig.ConsumerSecret,
+        //     twitterBotConfig.AccessToken,
+        //     twitterBotConfig.AccessTokenSecret
+        // )));
 
         services.AddHostedService<TwitterUpdateService>();
         services.AddScoped<TwitterChannel>();

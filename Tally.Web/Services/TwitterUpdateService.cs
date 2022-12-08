@@ -1,10 +1,11 @@
+using LinqToTwitter;
+using LinqToTwitter.Common;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tally.Web.Channels;
 using Tally.Web.Data;
 using Tally.Web.Hubs;
 using Tally.Web.Models;
-using Tweetinvi;
 
 namespace Tally.Web.Services;
 
@@ -32,7 +33,7 @@ public sealed class TwitterUpdateService : BackgroundService
         // HACK: Run the first update operation manually, because the timer does not.
         await TryUpdateAsync(cancellationToken);
         
-        var timer = new PeriodicTimer(TimeSpan.FromMinutes(30));
+        var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
         while (await timer.WaitForNextTickAsync(cancellationToken)) await TryUpdateAsync(cancellationToken);
         
         _logger.LogInformation("Stopping Twitter update service.");
@@ -44,7 +45,7 @@ public sealed class TwitterUpdateService : BackgroundService
         {
             var scope = _serviceScopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<TallyContext>();
-            var twitterClient = scope.ServiceProvider.GetRequiredService<TwitterClient>();
+            var twitterContext = scope.ServiceProvider.GetRequiredService<TwitterContext>();
             var channel = scope.ServiceProvider.GetRequiredService<TwitterChannel>();
 
             var channelPolls = await context.ChannelPolls
@@ -58,15 +59,27 @@ public sealed class TwitterUpdateService : BackgroundService
             _logger.LogInformation("Found {Count} ongoing polls with twitter channels.", channelPolls.Count);
 
             var tweetIds = channelPolls.Select(p => p.PrimaryIdentifier).ToArray();
-            var tweetResponse = await twitterClient.TweetsV2.GetTweetsAsync(tweetIds);
+            var tweetQuery = from tweet in twitterContext.Tweets 
+                where tweet.Type == TweetType.Lookup && 
+                      tweet.Ids == string.Join(", ", tweetIds) && 
+                      tweet.Expansions == ExpansionField.PollIds &&
+                      tweet.PollFields == PollField.AllFields
+                select tweet;
+            var tweetResponse = await tweetQuery.SingleOrDefaultAsync(cancellationToken: cancellationToken);
+            
+            if (tweetResponse?.Tweets == null) return; // Nothing to see here.
+
             var tweets = tweetResponse.Tweets;
-
-            for (var i = 0; i < tweets.Length; i++)
+            for (var i = 0; i < tweets.Count; i++)
             {
+                if (tweetResponse.Includes?.Polls is null) continue;
+                
                 var tweetPoll = tweetResponse.Includes.Polls[i];
-                var tweetPollOptions = tweetPoll.PollOptions;
+                var tweetPollOptions = tweetPoll.Options;
+                
+                if (tweetPollOptions == null) continue;
+                
                 var poll = channelPolls[i].Poll;
-
                 var voteCounts = poll.Options.Select((option, index) => new CachedVote
                 {
                     Count = tweetPollOptions[index].Votes, 
