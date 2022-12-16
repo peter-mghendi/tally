@@ -19,8 +19,8 @@ public class WebChannel : Channel
     
     public override Task<ChannelPoll> CreatePollAsync(string question, IEnumerable<string> options, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Attempting to create Web poll which will be created automatically.");
-        return Task.FromResult(BuildPoll("", ""));
+        var guid = Guid.NewGuid().ToString();
+        return Task.FromResult(BuildPoll(guid, guid));
     }
 
     public override async Task<ChannelResult> CountVotesAsync(ChannelPoll channelPoll, CancellationToken cancellationToken = default)
