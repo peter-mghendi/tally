@@ -1,24 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Identity;
 using Tally.Web.Channels;
 using Tally.Web.Data;
 using Tally.Web.Models;
-using User = Tally.Web.Models.User;
 
 namespace Tally.Web.Pages.Polls;
 
 [Authorize]
 public class Create : PageModel
 {
-    private readonly ILogger<Create> _logger;
-    private readonly TallyContext _context;
     private readonly List<IChannel> _channels;
+    private readonly TallyContext _context;
+    private readonly ILogger<Create> _logger;
     private readonly UserManager<User> _userManager;
-
-    [BindProperty] 
-    public Poll Poll { get; set; }
 
     public Create(
         ILogger<Create> logger,
@@ -29,18 +25,20 @@ public class Create : PageModel
     {
         _logger = logger;
         _context = context;
-        _channels = new List<IChannel>()
+        _channels = new List<IChannel>
         {
-            channels.Telegram, 
-            channels.Twitter, 
+            channels.Telegram,
+            channels.Twitter,
             channels.GitHub,
             channels.Discord,
-            channels.Web,
+            channels.Web
         };
         _userManager = userManager;
-        
+
         Poll = new Poll();
     }
+
+    [BindProperty] public Poll Poll { get; set; }
 
     public IActionResult OnGet()
     {
@@ -51,20 +49,21 @@ public class Create : PageModel
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task<IActionResult> OnPostAsync()
     {
-        Poll.Creator = await _userManager.GetUserAsync(User);
-        Poll.ChannelPolls = new List<ChannelPoll>
+        var options = Poll.Options.Select(o => o.Text);
+        var tasks = _channels.Select(c => c.CreatePollAsync(Poll.Question, options));
+
+        Poll.Creator = await _userManager.GetUserAsync(User) ?? throw new InvalidOperationException();
+        Poll.ChannelPolls = await Task.WhenAll(tasks);
+        
+        foreach (var cp in Poll.ChannelPolls)
         {
-            await _channels[0].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _channels[1].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _channels[2].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _channels[3].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-            await _channels[4].CreatePollAsync(Poll.Question, Poll.Options.Select(o => o.Text)),
-        };
+            _logger.LogInformation("Primary: {Primary}, Auxiliary: {SecondaryIdentifier}", cp.PrimaryIdentifier, cp.AuxiliaryIdentifier);
+        }
 
         await _context.Polls.AddAsync(Poll);
         await _context.SaveChangesAsync();
 
-        var cachedPollChannels = new List<PollChannel>() {PollChannel.Twitter};
+        var cachedPollChannels = new List<PollChannel> { PollChannel.Twitter };
         var cachedChannelPolls = Poll.ChannelPolls.Where(cp => cachedPollChannels.Contains(cp.Channel));
 
         var cachedVotes = new List<CachedVote>();
@@ -72,17 +71,17 @@ public class Create : PageModel
         {
             var voteCounts = Poll.Options.Select((option, _) => new CachedVote
             {
-                Count = 0, 
-                Channel = channelPoll.Channel, 
-                Option = option, 
-                Poll = Poll,
+                Count = 0,
+                Channel = channelPoll.Channel,
+                Option = option,
+                Poll = Poll
             });
             cachedVotes.AddRange(voteCounts);
         }
-        
+
         await _context.CachedVotes.AddRangeAsync(cachedVotes);
         await _context.SaveChangesAsync();
-        
+
         return RedirectToPage("./Index");
     }
 }
