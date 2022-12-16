@@ -8,16 +8,17 @@ using Tally.Web.Data;
 
 #nullable disable
 
-namespace Web.Data.Migrations
+namespace Tally.Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
-    [Migration("20220522204942_InitialCreate")]
+    [Migration("20221216061937_InitialCreate")]
     partial class InitialCreate
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.0");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {

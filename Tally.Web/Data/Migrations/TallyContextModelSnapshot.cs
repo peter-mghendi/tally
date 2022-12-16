@@ -7,7 +7,7 @@ using Tally.Web.Data;
 
 #nullable disable
 
-namespace Web.Data.Migrations
+namespace Tally.Web.Data.Migrations
 {
     [DbContext(typeof(TallyContext))]
     partial class TallyContextModelSnapshot : ModelSnapshot
@@ -15,7 +15,7 @@ namespace Web.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.0");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {

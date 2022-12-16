@@ -227,7 +227,8 @@ function initCharts(optionTotals: OptionTotal[], channelTotals: ChannelTotal[]) 
             }
         }
     });
-
+    
+    // @ts-ignore
     channelsChart = new Chart(channelsChartCtx, {
         type: 'doughnut',
         data: {

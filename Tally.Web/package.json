@@ -19,16 +19,16 @@
   },
   "homepage": "https://github.com/sixpeteunder/tally#readme",
   "dependencies": {
-    "@microsoft/signalr": "^6.0.5",
+    "@microsoft/signalr": "^7.0.0",
     "@types/alpinejs": "^3.7.0",
     "@types/humps": "^2.0.1",
     "alpinejs": "^3.10.2",
-    "chart.js": "^3.7.1",
+    "chart.js": "^4.0.1",
     "humps": "^2.0.1"
   },
   "devDependencies": {
     "webpack": "^5.70.0",
-    "webpack-cli": "^4.9.2",
+    "webpack-cli": "^5.0.1",
     "css-loader": "^6.7.1",
     "style-loader": "^3.3.1"
   }
